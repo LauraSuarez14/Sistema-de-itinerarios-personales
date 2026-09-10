@@ -5,6 +5,8 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 
+from common.vault_client import load_secrets
+
 
 def _get_int(name: str, default: int) -> int:
     value = os.getenv(name)
@@ -54,4 +56,16 @@ class Settings:
         )
 
 
-settings = Settings()
+# Secretos dinamicos (ver infra/vault/README.md): si Vault no esta
+# disponible, load_secrets cae de forma controlada a estas mismas variables
+# de entorno, asi que el comportamiento por defecto no cambia.
+_secrets = load_secrets(
+    mount_path="itinerary-service",
+    env_fallback_keys=["ITINERARY_DB_PASSWORD", "OAUTH2_CLIENT_SECRET", "JWT_SECRET_KEY"],
+)
+
+settings = Settings(
+    db_password=_secrets["ITINERARY_DB_PASSWORD"],
+    oauth2_client_secret=_secrets["OAUTH2_CLIENT_SECRET"],
+    jwt_secret_key=_secrets["JWT_SECRET_KEY"],
+)
