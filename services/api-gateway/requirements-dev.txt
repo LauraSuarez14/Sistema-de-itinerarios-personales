@@ -1,0 +1,8 @@
+# Dependencias extra para correr `pytest services/api-gateway/tests/` en
+# local, sin Docker ni los otros servicios corriendo. Instalar junto con
+# requirements.txt y el paquete itinerarios-common:
+#   pip install -r requirements.txt -r requirements-dev.txt
+#   pip install -e ../../libs/common
+-r requirements.txt
+pytest==8.3.3
+respx==0.21.1

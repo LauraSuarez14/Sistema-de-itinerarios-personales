@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Itinerarios Personales</title>
+
+  <!-- Pico.css: framework CSS liviano (sin JS, solo estilos base sobre HTML
+       semántico) para no tener que escribir un sistema de diseño propio en
+       un proyecto académico. -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+  <link rel="stylesheet" href="./styles.css" />
+
+  <!-- Plotly.js vía CDN oficial: este frontend corre en un contenedor
+       nginx real servido por docker-compose (no es un Artifact de Claude),
+       así que cargar el CDN es apropiado aquí. -->
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+</head>
+<body>
+  <header class="container">
+    <hgroup>
+      <h1>Sistema de Itinerarios Personales</h1>
+      <p>Frontend estático (HTML/CSS/JS plano) que consume el API Gateway</p>
+    </hgroup>
+  </header>
+
+  <main class="container">
+    <!-- ================= Sesión ================= -->
+    <section id="session-section">
+      <h2>Sesión</h2>
+      <div id="session-status" class="status-box status-info">
+        No has iniciado sesión. Puedes ver el mapa de aeropuertos sin iniciar
+        sesión, pero necesitas iniciar sesión para crear, listar o eliminar
+        itinerarios.
+      </div>
+
+      <form id="login-form" class="grid">
+        <input type="text" id="login-username" name="username" placeholder="Usuario (ej. viajero)" required autocomplete="username" />
+        <input type="password" id="login-password" name="password" placeholder="Contraseña" required autocomplete="current-password" />
+        <button type="submit">Iniciar sesión</button>
+        <button type="button" id="logout-btn" class="secondary" disabled>Cerrar sesión</button>
+      </form>
+      <div id="login-error" class="status-box status-error" hidden></div>
+    </section>
+
+    <!-- ================= Mapa ================= -->
+    <section id="map-section">
+      <h2>Mapa de aeropuertos (Colombia)</h2>
+      <p>
+        Datos públicos obtenidos de <code>GET /api/v1/airports/plotly/points</code>,
+        no requiere sesión iniciada.
+      </p>
+      <div id="map-error" class="status-box status-error" hidden></div>
+      <div id="airports-map"></div>
+      <button type="button" id="reload-map-btn" class="secondary">Recargar mapa</button>
+    </section>
+
+    <!-- ================= Crear itinerario ================= -->
+    <section id="create-section">
+      <h2>Crear itinerario</h2>
+      <form id="create-itinerary-form" class="grid">
+        <input type="text" id="itn-user-name" placeholder="Nombre del usuario" required />
+        <input type="number" id="itn-origin" placeholder="Id aeropuerto origen" required min="1" />
+        <input type="number" id="itn-destination" placeholder="Id aeropuerto destino" required min="1" />
+        <input type="date" id="itn-travel-date" required />
+        <input type="number" id="itn-duration" placeholder="Duración (minutos)" required min="1" />
+        <button type="submit">Crear itinerario</button>
+      </form>
+      <div id="create-result" class="status-box" hidden></div>
+    </section>
+
+    <!-- ================= Listado ================= -->
+    <section id="list-section">
+      <h2>Itinerarios existentes</h2>
+      <div id="list-error" class="status-box status-error" hidden></div>
+      <table>
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>Usuario</th>
+            <th>Origen</th>
+            <th>Destino</th>
+            <th>Fecha</th>
+            <th>Duración (min)</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="itineraries-tbody">
+          <tr><td colspan="7">Aún no se ha cargado ningún itinerario.</td></tr>
+        </tbody>
+      </table>
+      <div class="pagination">
+        <button type="button" id="prev-page-btn" class="secondary">« Anterior</button>
+        <span id="page-indicator">página 1</span>
+        <button type="button" id="next-page-btn" class="secondary">Siguiente »</button>
+        <button type="button" id="refresh-list-btn">Actualizar lista</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="container">
+    <small>API Gateway detectado en: <code id="api-base-display"></code></small>
+  </footer>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
