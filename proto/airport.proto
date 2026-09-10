@@ -1,0 +1,44 @@
+// Contrato gRPC del contexto delimitado "Airport" (Aeropuertos).
+// Es el transporte interno usado por Itinerary Service para la validación
+// directa de existencia de aeropuertos (Nivel 1) y satisface el bonus de
+// comunicación interna vía gRPC/Protobuf (Nivel 3). El modelo expuesto aquí
+// es siempre el modelo de dominio ya adaptado (patrón Adapter) — nunca la
+// forma cruda de la API externa API Colombia.
+syntax = "proto3";
+
+package airport.v1;
+
+service AirportService {
+  // Devuelve un aeropuerto por su identificador de dominio, o NOT_FOUND si
+  // no existe (usado por Itinerary Service para validar antes de guardar).
+  rpc GetAirportById(GetAirportByIdRequest) returns (AirportReply);
+
+  // Lista aeropuertos colombianos paginados, en el formato ya adaptado.
+  rpc ListAirports(ListAirportsRequest) returns (ListAirportsReply);
+}
+
+message GetAirportByIdRequest {
+  int32 airport_id = 1;
+}
+
+message ListAirportsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+}
+
+message AirportReply {
+  int32 id = 1;
+  string name = 2;
+  string iata_code = 3;
+  string city = 4;
+  double latitude = 5;
+  double longitude = 6;
+  bool found = 7;
+}
+
+message ListAirportsReply {
+  repeated AirportReply items = 1;
+  int32 page = 2;
+  int32 page_size = 3;
+  int32 total = 4;
+}

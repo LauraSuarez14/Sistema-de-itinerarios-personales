@@ -1,0 +1,181 @@
+networks:
+  itinerarios-net:
+    driver: bridge
+
+volumes:
+  itinerary-db-data:
+  rabbitmq-data:
+  grafana-data:
+  vault-data:
+
+services:
+  # ---------------------------------------------------------------------
+  # Infraestructura compartida
+  # ---------------------------------------------------------------------
+  itinerary-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${ITINERARY_DB_NAME:-itinerary}
+      POSTGRES_USER: ${ITINERARY_DB_USER:-itinerary}
+      POSTGRES_PASSWORD: ${ITINERARY_DB_PASSWORD:-itinerary-db-pass}
+    ports: ["5432:5432"]
+    volumes: ["itinerary-db-data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${ITINERARY_DB_USER:-itinerary}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks: [itinerarios-net]
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks: [itinerarios-net]
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports: ["5672:5672", "15672:15672"]
+    volumes: ["rabbitmq-data:/var/lib/rabbitmq"]
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks: [itinerarios-net]
+
+  localstack:
+    image: localstack/localstack:3.8
+    ports: ["4566:4566"]
+    environment:
+      SERVICES: lambda
+      DEBUG: 0
+      LAMBDA_EXECUTOR: local
+    volumes:
+      - "./infra/localstack/init:/etc/localstack/init/ready.d"
+      - "./functions:/functions"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [itinerarios-net]
+
+  vault:
+    image: hashicorp/vault:1.17
+    ports: ["8200:8200"]
+    cap_add: ["IPC_LOCK"]
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_TOKEN:-dev-only-token}
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    volumes: ["vault-data:/vault/data"]
+    networks: [itinerarios-net]
+
+  toxiproxy:
+    image: ghcr.io/shopify/toxiproxy:2.9.0
+    ports: ["8474:8474", "8666:8666"]
+    volumes: ["./infra/toxiproxy/toxiproxy.json:/config/toxiproxy.json:ro"]
+    command: ["-host=0.0.0.0", "-config=/config/toxiproxy.json"]
+    networks: [itinerarios-net]
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.60
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686" # UI
+      - "4317:4317"   # OTLP gRPC
+    networks: [itinerarios-net]
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    volumes:
+      - "./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro"
+      - "./infra/prometheus/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro"
+    ports: ["9090:9090"]
+    networks: [itinerarios-net]
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    ports: ["3000:3000"]
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+    volumes:
+      - "grafana-data:/var/lib/grafana"
+      - "./infra/grafana/provisioning:/etc/grafana/provisioning"
+    depends_on: [prometheus]
+    networks: [itinerarios-net]
+
+  # ---------------------------------------------------------------------
+  # Microservicios
+  # ---------------------------------------------------------------------
+  airport-service:
+    build:
+      context: .
+      dockerfile: services/airport-service/Dockerfile
+    env_file: .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "8001:8001"   # REST + Swagger
+      - "50051:50051" # gRPC
+    depends_on:
+      redis: { condition: service_healthy }
+    networks: [itinerarios-net]
+
+  itinerary-service:
+    build:
+      context: .
+      dockerfile: services/itinerary-service/Dockerfile
+    env_file: .env
+    environment:
+      ITINERARY_DB_HOST: itinerary-db
+      AIRPORT_SERVICE_GRPC_URL: airport-service:50051
+      AIRPORT_SERVICE_HTTP_URL: http://airport-service:8001
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+    ports: ["8002:8002"]
+    depends_on:
+      itinerary-db: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      airport-service: { condition: service_started }
+    networks: [itinerarios-net]
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
+    env_file: .env
+    environment:
+      AIRPORT_SERVICE_URL: http://airport-service:8001
+      ITINERARY_SERVICE_URL: http://itinerary-service:8002
+    ports: ["8000:8000"]
+    depends_on:
+      airport-service: { condition: service_started }
+      itinerary-service: { condition: service_started }
+    networks: [itinerarios-net]
+
+  notification-bridge:
+    build:
+      context: .
+      dockerfile: services/notification-bridge/Dockerfile
+    env_file: .env
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      AWS_ENDPOINT_URL: http://localstack:4566
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+      localstack: { condition: service_healthy }
+    networks: [itinerarios-net]
+
+  frontend:
+    image: nginx:1.27-alpine
+    volumes:
+      - "./frontend:/usr/share/nginx/html:ro"
+    ports: ["8080:80"]
+    depends_on: [api-gateway]
+    networks: [itinerarios-net]

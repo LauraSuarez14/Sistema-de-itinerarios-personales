@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "itinerarios-common"
+version = "0.1.0"
+description = "Utilidades transversales compartidas (logging, correlation id, OpenTelemetry, JWT, Vault) para los microservicios del Sistema de Itinerarios Personales."
+requires-python = ">=3.11"
+dependencies = [
+    "python-json-logger>=2.0.7",
+    "opentelemetry-sdk>=1.27.0",
+    "opentelemetry-exporter-otlp-proto-grpc>=1.27.0",
+    "opentelemetry-instrumentation-fastapi>=0.48b0",
+    "opentelemetry-instrumentation-httpx>=0.48b0",
+    "python-jose[cryptography]>=3.3.0",
+    "hvac>=2.1.0",
+    "starlette>=0.37.0",
+]
+
+[tool.setuptools.packages.find]
+include = ["common*"]
