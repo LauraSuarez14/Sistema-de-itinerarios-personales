@@ -1,0 +1,54 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: itinerary-db-pvc
+  namespace: itinerarios
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests: { storage: 1Gi }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: itinerary-db
+  namespace: itinerarios
+spec:
+  replicas: 1
+  strategy: { type: Recreate }
+  selector:
+    matchLabels: { app: itinerary-db }
+  template:
+    metadata:
+      labels: { app: itinerary-db }
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          env:
+            - { name: POSTGRES_DB, valueFrom: { configMapKeyRef: { name: itinerarios-config, key: ITINERARY_DB_NAME } } }
+            - { name: POSTGRES_USER, valueFrom: { configMapKeyRef: { name: itinerarios-config, key: ITINERARY_DB_USER } } }
+            - { name: POSTGRES_PASSWORD, valueFrom: { secretKeyRef: { name: itinerarios-secrets, key: ITINERARY_DB_PASSWORD } } }
+          ports: [{ containerPort: 5432 }]
+          volumeMounts:
+            - { name: data, mountPath: /var/lib/postgresql/data }
+          readinessProbe:
+            exec: { command: ["pg_isready", "-U", "itinerary"] }
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            exec: { command: ["pg_isready", "-U", "itinerary"] }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+      volumes:
+        - name: data
+          persistentVolumeClaim: { claimName: itinerary-db-pvc }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: itinerary-db
+  namespace: itinerarios
+spec:
+  selector: { app: itinerary-db }
+  ports: [{ port: 5432, targetPort: 5432 }]

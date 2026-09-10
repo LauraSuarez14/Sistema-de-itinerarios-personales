@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: itinerary-service
+  namespace: itinerarios
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: itinerary-service }
+  template:
+    metadata:
+      labels: { app: itinerary-service }
+    spec:
+      initContainers:
+        - name: wait-for-db
+          image: postgres:16-alpine
+          command:
+            - sh
+            - -c
+            - until pg_isready -h itinerary-db -p 5432 -U itinerary; do sleep 2; done
+      containers:
+        - name: itinerary-service
+          image: itinerarios/itinerary-service:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef: { name: itinerarios-config }
+          env:
+            - { name: JWT_SECRET_KEY, valueFrom: { secretKeyRef: { name: itinerarios-secrets, key: JWT_SECRET_KEY } } }
+            - { name: OAUTH2_CLIENT_SECRET, valueFrom: { secretKeyRef: { name: itinerarios-secrets, key: OAUTH2_CLIENT_SECRET } } }
+            - { name: ITINERARY_DB_PASSWORD, valueFrom: { secretKeyRef: { name: itinerarios-secrets, key: ITINERARY_DB_PASSWORD } } }
+            - { name: VAULT_TOKEN, valueFrom: { secretKeyRef: { name: itinerarios-secrets, key: VAULT_TOKEN } } }
+          ports:
+            - { containerPort: 8002, name: http }
+          readinessProbe:
+            httpGet: { path: /health, port: 8002 }
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 8002 }
+            initialDelaySeconds: 15
+            periodSeconds: 15
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits: { cpu: "500m", memory: "256Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: itinerary-service
+  namespace: itinerarios
+spec:
+  selector: { app: itinerary-service }
+  ports: [{ name: http, port: 8002, targetPort: 8002 }]

@@ -1,0 +1,37 @@
+# Configuración no sensible, equivalente a .env.example, compartida por los
+# Deployments de este manifiesto. Los valores sensibles viven en 02-secrets.yaml.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: itinerarios-config
+  namespace: itinerarios
+data:
+  API_COLOMBIA_BASE_URL: "https://api-colombia.com/api/v1"
+  TOXIPROXY_ENABLED: "false"
+  REDIS_URL: "redis://redis:6379/0"
+  AIRPORT_CACHE_TTL_SECONDS: "3600"
+  AIRPORT_HTTP_PORT: "8001"
+  AIRPORT_GRPC_PORT: "50051"
+  OAUTH2_CLIENT_ID: "itinerary-service"
+  AIRPORT_SERVICE_GRPC_URL: "airport-service:50051"
+  AIRPORT_SERVICE_HTTP_URL: "http://airport-service:8001"
+  AIRPORT_SERVICE_URL: "http://airport-service:8001"
+  ITINERARY_SERVICE_URL: "http://itinerary-service:8002"
+  ITINERARY_SERVICE_HTTP_URL: "http://itinerary-service:8002"
+  ITINERARY_DB_HOST: "itinerary-db"
+  ITINERARY_DB_PORT: "5432"
+  ITINERARY_DB_NAME: "itinerary"
+  ITINERARY_DB_USER: "itinerary"
+  OUTBOX_RELAY_INTERVAL_SECONDS: "2"
+  RABBITMQ_URL: "amqp://guest:guest@rabbitmq:5672/"
+  RABBITMQ_EXCHANGE: "itinerary.events"
+  NOTIFICATION_QUEUE: "itinerary.notifications"
+  ITINERARY_HTTP_PORT: "8002"
+  GATEWAY_HTTP_PORT: "8000"
+  RATE_LIMIT_PER_MINUTE: "60"
+  AWS_ENDPOINT_URL: "http://localstack:4566"
+  AWS_DEFAULT_REGION: "us-east-1"
+  SEND_NOTIFICATION_FUNCTION_NAME: "SendNotificationFunction"
+  GENERATE_REPORT_FUNCTION_NAME: "GenerateItineraryReportFunction"
+  VAULT_ADDR: "http://vault:8200"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://jaeger:4317"

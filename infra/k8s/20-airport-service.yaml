@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airport-service
+  namespace: itinerarios
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: airport-service }
+  template:
+    metadata:
+      labels: { app: airport-service }
+    spec:
+      containers:
+        - name: airport-service
+          image: itinerarios/airport-service:latest
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef: { name: itinerarios-config }
+          env:
+            - { name: JWT_SECRET_KEY, valueFrom: { secretKeyRef: { name: itinerarios-secrets, key: JWT_SECRET_KEY } } }
+            - { name: OAUTH2_CLIENT_SECRET, valueFrom: { secretKeyRef: { name: itinerarios-secrets, key: OAUTH2_CLIENT_SECRET } } }
+            - { name: VAULT_TOKEN, valueFrom: { secretKeyRef: { name: itinerarios-secrets, key: VAULT_TOKEN } } }
+          ports:
+            - { containerPort: 8001, name: http }
+            - { containerPort: 50051, name: grpc }
+          readinessProbe:
+            httpGet: { path: /health, port: 8001 }
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: { path: /health, port: 8001 }
+            initialDelaySeconds: 10
+            periodSeconds: 15
+          resources:
+            requests: { cpu: "100m", memory: "128Mi" }
+            limits: { cpu: "500m", memory: "256Mi" }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: airport-service
+  namespace: itinerarios
+spec:
+  selector: { app: airport-service }
+  ports:
+    - { name: http, port: 8001, targetPort: 8001 }
+    - { name: grpc, port: 50051, targetPort: 50051 }
