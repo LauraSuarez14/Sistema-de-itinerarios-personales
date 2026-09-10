@@ -1,0 +1,3 @@
+# Sin dependencias externas -- urllib (stdlib) alcanza para el GET HTTP a
+# Itinerary Service. Se mantiene deliberadamente sin dependencias para que
+# el paquete de despliegue (.zip) sea trivial.

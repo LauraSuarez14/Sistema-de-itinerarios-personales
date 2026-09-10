@@ -1,0 +1,243 @@
+asyncapi: '2.6.0'
+info:
+  title: Sistema de Itinerarios Personales - Eventos de Integracion
+  version: '1.0.0'
+  description: |
+    Contrato de mensajeria asincrona entre el Itinerary Context y el
+    Notification Context (ver `docs/adr/0003-eventos-dominio-vs-integracion.md`).
+
+    Itinerary Service publica `ItineraryCreatedEvent v1` en el exchange topic
+    `itinerary.events` de RabbitMQ, usando el patron Transactional Outbox
+    (`docs/adr/0002-double-write-problem.md`) para garantizar entrega
+    at-least-once. `notification-bridge` consume la cola `itinerary.notifications`
+    (bindeada a ese exchange con routing key `itinerary.created.v1`) y por
+    cada mensaje invoca (AWS SDK `lambda:Invoke`) la funcion
+    `SendNotificationFunction` en LocalStack -- este puente existe porque
+    RabbitMQ no es un origen de eventos nativo de AWS Lambda (ver README.md
+    raiz, seccion 5).
+
+    La routing key incluye explicitamente la version del contrato
+    (`itinerary.created.v1`) para dejar claro que se trata de un evento de
+    integracion versionado: cambios incompatibles requieren una nueva
+    routing key (`itinerary.created.v2`), nunca rompen a los consumidores
+    existentes de la v1.
+  contact:
+    name: Sistema de Itinerarios Personales (proyecto academico)
+
+defaultContentType: application/json
+
+servers:
+  rabbitmq:
+    url: rabbitmq:5672
+    protocol: amqp
+    description: |
+      Broker RabbitMQ compartido (ver `RABBITMQ_URL` en `.env.example`).
+      Management UI disponible en `http://localhost:15672` (guest/guest).
+
+channels:
+  itinerary.events:
+    description: |
+      Exchange de tipo `topic`, durable, donde Itinerary Service publica
+      todos sus eventos de integracion (por ahora, solo
+      `ItineraryCreatedEvent v1`). Los consumidores se suscriben creando su
+      propia cola y bindeandola con la routing key que les interese, nunca
+      consumiendo directamente del exchange.
+    bindings:
+      amqp:
+        is: routingKey
+        exchange:
+          name: itinerary.events
+          type: topic
+          durable: true
+          autoDelete: false
+    publish:
+      operationId: publishItineraryCreatedEvent
+      summary: |
+        Itinerary Service publica este evento cuando un itinerario nuevo se
+        confirma (via `OutboxRelay`, fuera de la transaccion de escritura
+        original -- ver ADR 0002).
+      message:
+        $ref: '#/components/messages/ItineraryCreatedEvent'
+
+  itinerary.notifications:
+    description: |
+      Cola durable (`NOTIFICATION_QUEUE`, default `itinerary.notifications`)
+      bindeada a `itinerary.events` con routing key `itinerary.created.v1`.
+      Configurada con `x-dead-letter-exchange=itinerary.notifications.dlx`
+      para que los mensajes rechazados (schema invalido, o agotamiento de
+      reintentos al invocar la Lambda) se enruten automaticamente a la
+      dead-letter queue en vez de perderse.
+    bindings:
+      amqp:
+        is: queue
+        queue:
+          name: itinerary.notifications
+          durable: true
+          exclusive: false
+          autoDelete: false
+    subscribe:
+      operationId: consumeItineraryCreatedEventForNotification
+      summary: |
+        `notification-bridge` consume esta cola y, por cada mensaje valido,
+        invoca de forma sincrona (`InvocationType=RequestResponse`) la
+        funcion Lambda `SendNotificationFunction` en LocalStack, pasandole
+        el JSON del evento tal cual como `Payload`.
+      message:
+        $ref: '#/components/messages/ItineraryCreatedEvent'
+
+  itinerary.notifications.dead:
+    description: |
+      Cola durable de dead-letter, alimentada por la exchange fanout
+      `itinerary.notifications.dlx`. Recibe: (a) mensajes que no matchean el
+      esquema de `ItineraryCreatedEvent v1` (rechazados sin reintento por
+      `notification-bridge`), y (b) mensajes validos cuya invocacion a
+      `SendNotificationFunction` fallo repetidamente (reintentos agotados).
+      Su existencia permite que Prometheus/Alertmanager detecten
+      dead-letters acumulados (criterio de "Alerting" del proyecto), en vez
+      de perder esos mensajes silenciosamente.
+    bindings:
+      amqp:
+        is: queue
+        queue:
+          name: itinerary.notifications.dead
+          durable: true
+          exclusive: false
+          autoDelete: false
+    subscribe:
+      operationId: inspectDeadLetteredItineraryEvents
+      summary: |
+        Cola de solo inspeccion/alerta (RabbitMQ management UI, o un
+        consumidor operativo manual); ningun componente automatizado la
+        consume en este proyecto.
+      message:
+        $ref: '#/components/messages/ItineraryCreatedEvent'
+
+components:
+  messages:
+    ItineraryCreatedEvent:
+      name: ItineraryCreatedEvent
+      title: Itinerary Created Event (v1)
+      summary: |
+        Evento de integracion publicado cuando se crea un itinerario. Es la
+        traduccion explicita del evento de dominio `ItineraryCreated` (ver
+        ADR 0003) al contrato que cruza la frontera del servicio.
+      contentType: application/json
+      bindings:
+        amqp:
+          contentEncoding: utf-8
+          messageType: ItineraryCreatedEvent
+      payload:
+        $ref: '#/components/schemas/ItineraryCreatedEvent'
+      examples:
+        - name: ItinerarioBogotaMedellin
+          payload:
+            event_id: '5c9c6f2a-9d3a-4b2a-9c3d-abcdef123456'
+            event_type: ItineraryCreatedEvent
+            event_version: 1
+            occurred_at: '2026-09-09T12:00:00Z'
+            data:
+              itinerary_id: 'e2b1c0d0-1a2b-4b2a-9c3d-abcdef654321'
+              user_name: 'Sebastian Ezquivel'
+              origin_airport:
+                id: 1
+                iata_code: 'BOG'
+                name: 'El Dorado'
+              destination_airport:
+                id: 2
+                iata_code: 'MDE'
+                name: 'Jose Maria Cordova'
+              travel_date: '2026-10-01'
+              duration_minutes: 65
+
+  schemas:
+    Airport:
+      type: object
+      description: Referencia de valor del aeropuerto (ver ADR 0001), embebida en el evento.
+      required: [id, iata_code, name]
+      properties:
+        id:
+          type: integer
+          description: Identificador del aeropuerto en Airport Service.
+          example: 1
+        iata_code:
+          type: string
+          minLength: 3
+          maxLength: 3
+          description: Codigo IATA de 3 letras.
+          example: 'BOG'
+        name:
+          type: string
+          description: Nombre del aeropuerto.
+          example: 'El Dorado'
+      additionalProperties: false
+
+    ItineraryCreatedEventData:
+      type: object
+      required:
+        - itinerary_id
+        - user_name
+        - origin_airport
+        - destination_airport
+        - travel_date
+        - duration_minutes
+      properties:
+        itinerary_id:
+          type: string
+          format: uuid
+          description: Identificador del itinerario en Itinerary Service.
+          example: 'e2b1c0d0-1a2b-4b2a-9c3d-abcdef654321'
+        user_name:
+          type: string
+          description: Nombre del usuario que creo el itinerario.
+          example: 'Sebastian Ezquivel'
+        origin_airport:
+          $ref: '#/components/schemas/Airport'
+        destination_airport:
+          $ref: '#/components/schemas/Airport'
+        travel_date:
+          type: string
+          format: date
+          description: Fecha del viaje (sin componente horario).
+          example: '2026-10-01'
+        duration_minutes:
+          type: integer
+          minimum: 0
+          description: Duracion estimada del viaje en minutos.
+          example: 65
+      additionalProperties: false
+
+    ItineraryCreatedEvent:
+      type: object
+      description: |
+        Contrato EXACTO del evento de integracion `ItineraryCreatedEvent v1`
+        (routing key `itinerary.created.v1`). No debe cambiarse de forma
+        incompatible: cualquier cambio que rompa consumidores existentes
+        requiere una nueva version (`itinerary.created.v2`), ver ADR 0003.
+      required:
+        - event_id
+        - event_type
+        - event_version
+        - occurred_at
+        - data
+      properties:
+        event_id:
+          type: string
+          format: uuid
+          description: Identificador unico del evento, usado por los consumidores para deduplicar (semantica at-least-once, ver ADR 0002).
+          example: '5c9c6f2a-9d3a-4b2a-9c3d-abcdef123456'
+        event_type:
+          type: string
+          enum: [ItineraryCreatedEvent]
+          example: ItineraryCreatedEvent
+        event_version:
+          type: integer
+          enum: [1]
+          example: 1
+        occurred_at:
+          type: string
+          format: date-time
+          description: Timestamp UTC (formato ISO-8601, sufijo `Z`) de cuando ocurrio el evento de dominio.
+          example: '2026-09-09T12:00:00Z'
+        data:
+          $ref: '#/components/schemas/ItineraryCreatedEventData'
+      additionalProperties: false

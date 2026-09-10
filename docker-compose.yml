@@ -7,6 +7,16 @@ volumes:
   rabbitmq-data:
   grafana-data:
   vault-data:
+  # Persistencia de SendNotificationFunction (sqlite3 en NOTIFICATION_DB_PATH,
+  # ver functions/send_notification_function/handler.py e
+  # infra/localstack/init/01_create_functions.sh). El runtime Lambda de
+  # LocalStack corre dentro del propio contenedor `localstack`
+  # (LAMBDA_EXECUTOR=local), asi que un volumen nombrado montado ahi permite
+  # que el historial de notificaciones sobreviva a un `docker compose
+  # restart`/`up` (no a un `down -v`), unicamente para poder observar la
+  # deduplicacion por event_id entre invocaciones en este proyecto academico
+  # -- en una nube real esto seria DynamoDB/RDS, nunca un volumen local.
+  localstack-notifications-data:
 
 services:
   # ---------------------------------------------------------------------
@@ -62,6 +72,8 @@ services:
     volumes:
       - "./infra/localstack/init:/etc/localstack/init/ready.d"
       - "./functions:/functions"
+      # Ver comentario en la seccion `volumes:` de arriba (localstack-notifications-data).
+      - "localstack-notifications-data:/var/lib/localstack/notifications"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
       interval: 5s
@@ -180,6 +192,8 @@ services:
     environment:
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
       AWS_ENDPOINT_URL: http://localstack:4566
+    ports:
+      - "8090:8090" # /health y /metrics (Prometheus)
     depends_on:
       rabbitmq: { condition: service_healthy }
       localstack: { condition: service_healthy }

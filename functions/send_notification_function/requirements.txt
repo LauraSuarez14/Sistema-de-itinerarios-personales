@@ -1,0 +1,4 @@
+# Sin dependencias externas -- sqlite3 es libreria estandar de Python.
+# Se mantiene deliberadamente sin dependencias para que el paquete de
+# despliegue (.zip) sea trivial y no necesite `pip install` en el proceso
+# de empaquetado (ver infra/localstack/init/01_create_functions.sh).
