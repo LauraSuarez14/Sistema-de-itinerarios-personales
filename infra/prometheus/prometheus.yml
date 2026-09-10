@@ -28,7 +28,7 @@ scrape_configs:
   - job_name: notification-bridge
     metrics_path: /metrics
     static_configs:
-      - targets: ["notification-bridge:8003"]
+      - targets: ["notification-bridge:8090"]
 
   - job_name: rabbitmq
     metrics_path: /metrics

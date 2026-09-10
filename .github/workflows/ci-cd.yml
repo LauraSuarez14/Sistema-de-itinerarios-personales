@@ -1,0 +1,131 @@
+name: CI/CD
+
+# Pipeline de referencia (Nivel 3, bonus "CI/CD"). No se ejecutó contra un
+# runner real durante el desarrollo de este proyecto (no había credenciales
+# de un registry ni un cluster disponibles en el entorno de generación de
+# código) — se entrega validado sintácticamente (`actionlint`-friendly) y
+# listo para ejecutarse en un repositorio real con los secretos configurados.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository }}
+
+jobs:
+  test:
+    name: test (${{ matrix.service }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - airport-service
+          - itinerary-service
+          - api-gateway
+          - notification-bridge
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependencias
+        working-directory: services/${{ matrix.service }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ../../libs/common
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; else pip install pytest pytest-asyncio; fi
+
+      - name: Ejecutar tests unitarios
+        working-directory: services/${{ matrix.service }}
+        run: PYTHONPATH=. pytest tests/ -v
+
+  test-functions:
+    name: test (funciones serverless)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Ejecutar tests de las funciones Lambda (sin dependencias externas)
+        run: |
+          pip install pytest
+          if [ -d functions/send_notification_function/tests ]; then PYTHONPATH=functions/send_notification_function pytest functions/send_notification_function/tests -v; fi
+          if [ -d functions/generate_itinerary_report_function/tests ]; then PYTHONPATH=functions/generate_itinerary_report_function pytest functions/generate_itinerary_report_function/tests -v; fi
+
+  build:
+    name: build (${{ matrix.service }})
+    needs: [test]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    strategy:
+      matrix:
+        service:
+          - airport-service
+          - itinerary-service
+          - api-gateway
+          - notification-bridge
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push imagen
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: services/${{ matrix.service }}/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}:latest
+
+  build-frontend:
+    name: build (frontend)
+    needs: [test]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build & push imagen del frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: frontend
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}-frontend:latest
+
+  deploy:
+    name: deploy (manual, requiere cluster real)
+    needs: [build, build-frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    environment: production  # requiere aprobación manual configurada en el repo
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy a Kubernetes
+        run: |
+          echo "Este job es un STUB documentado: requiere KUBE_CONFIG_DATA en" \
+               "los secretos del repositorio y un cluster real. No se ejecutó" \
+               "en el entorno donde se generó este proyecto."
+          # kubectl --kubeconfig <(echo "$KUBE_CONFIG_DATA" | base64 -d) apply -f infra/k8s/

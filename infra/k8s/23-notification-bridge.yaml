@@ -24,13 +24,13 @@ spec:
             - { name: AWS_ACCESS_KEY_ID, valueFrom: { secretKeyRef: { name: itinerarios-secrets, key: AWS_ACCESS_KEY_ID } } }
             - { name: AWS_SECRET_ACCESS_KEY, valueFrom: { secretKeyRef: { name: itinerarios-secrets, key: AWS_SECRET_ACCESS_KEY } } }
           ports:
-            - { containerPort: 8003, name: http }
+            - { containerPort: 8090, name: http }
           readinessProbe:
-            httpGet: { path: /health, port: 8003 }
+            httpGet: { path: /health, port: 8090 }
             initialDelaySeconds: 10
             periodSeconds: 10
           livenessProbe:
-            httpGet: { path: /health, port: 8003 }
+            httpGet: { path: /health, port: 8090 }
             initialDelaySeconds: 15
             periodSeconds: 15
           resources:
@@ -44,4 +44,4 @@ metadata:
   namespace: itinerarios
 spec:
   selector: { app: notification-bridge }
-  ports: [{ name: http, port: 8003, targetPort: 8003 }]
+  ports: [{ name: http, port: 8090, targetPort: 8090 }]
