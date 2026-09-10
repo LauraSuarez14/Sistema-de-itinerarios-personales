@@ -1,0 +1,8 @@
+[
+  {
+    "name": "api_colombia",
+    "listen": "0.0.0.0:8666",
+    "upstream": "api-colombia-mock:80",
+    "enabled": true
+  }
+]

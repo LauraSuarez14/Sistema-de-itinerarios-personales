@@ -1,0 +1,52 @@
+groups:
+  - name: resiliencia
+    rules:
+      - alert: AirportCircuitBreakerOpen
+        expr: airport_circuit_breaker_state{target="api-colombia"} == 1
+        for: 15s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Circuit breaker abierto hacia API Colombia"
+          description: >
+            El disyuntor del Airport Service lleva al menos 15s abierto hacia
+            la API externa API Colombia. Las peticiones están fallando rápido
+            (fail-fast) en vez de esperar a que la fuente externa responda.
+
+      - alert: AirportBulkheadRejectionsHigh
+        expr: increase(airport_bulkhead_rejections_total[5m]) > 10
+        labels:
+          severity: warning
+        annotations:
+          summary: "Bulkhead del Airport Service rechazando llamadas por saturación"
+          description: >
+            Más de 10 llamadas a la API externa fueron rechazadas en los
+            últimos 5 minutos porque el bulkhead alcanzó su límite de
+            concurrencia — posible saturación o fuente externa muy lenta.
+
+  - name: mensajeria
+    rules:
+      - alert: RabbitMQDeadLetterQueueNonEmpty
+        expr: rabbitmq_queue_messages{queue="itinerary.notifications.dead"} > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Hay mensajes en la cola de dead-letters de notificaciones"
+          description: >
+            {{ $value }} mensaje(s) de ItineraryCreatedEvent no pudieron
+            procesarse tras agotar los reintentos del notification-bridge y
+            quedaron en itinerary.notifications.dead. Requiere revisión
+            manual — puede haber usuarios sin notificación de su itinerario.
+
+      - alert: RabbitMQQueueBacklogGrowing
+        expr: rabbitmq_queue_messages_ready{queue="itinerary.notifications"} > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "La cola de notificaciones acumula mensajes sin consumir"
+          description: >
+            Más de 100 mensajes esperando en itinerary.notifications durante
+            5 minutos: el notification-bridge podría estar caído o LocalStack
+            no está respondiendo a las invocaciones Lambda.

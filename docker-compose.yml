@@ -39,7 +39,11 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
-    ports: ["5672:5672", "15672:15672"]
+    # Habilita el plugin nativo de métricas Prometheus (además del plugin de
+    # administración que ya trae la imagen -management), para poder alertar
+    # sobre profundidad de colas / dead-letters sin un exporter aparte.
+    command: ["sh", "-c", "rabbitmq-plugins enable --offline rabbitmq_prometheus && rabbitmq-server"]
+    ports: ["5672:5672", "15672:15672", "15692:15692"]
     volumes: ["rabbitmq-data:/var/lib/rabbitmq"]
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
@@ -75,11 +79,20 @@ services:
     volumes: ["vault-data:/vault/data"]
     networks: [itinerarios-net]
 
+  # Stub local que imita la forma real de API Colombia, usado SOLO para las
+  # demostraciones de Chaos Engineering (ver infra/toxiproxy/mock-api-colombia).
+  # En operación normal Airport Service llama a la API pública real; este
+  # contenedor no recibe tráfico salvo que TOXIPROXY_ENABLED=true.
+  api-colombia-mock:
+    build: ./infra/toxiproxy/mock-api-colombia
+    networks: [itinerarios-net]
+
   toxiproxy:
     image: ghcr.io/shopify/toxiproxy:2.9.0
     ports: ["8474:8474", "8666:8666"]
     volumes: ["./infra/toxiproxy/toxiproxy.json:/config/toxiproxy.json:ro"]
     command: ["-host=0.0.0.0", "-config=/config/toxiproxy.json"]
+    depends_on: [api-colombia-mock]
     networks: [itinerarios-net]
 
   jaeger:
