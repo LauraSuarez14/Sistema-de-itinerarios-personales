@@ -1,0 +1,16 @@
+section.card + section.card {
+  margin-top: 1.75rem;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.page-indicator {
+  font-weight: 600;
+  color: var(--brand-purple-600);
+}

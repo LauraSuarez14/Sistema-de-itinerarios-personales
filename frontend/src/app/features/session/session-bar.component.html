@@ -1,0 +1,20 @@
+<section class="card session-card">
+  <h2>{{ 'session.title' | translate }}</h2>
+
+  @if (auth.isLoggedIn()) {
+    <app-status-box kind="success" [message]="'session.loggedInAs' | translate: { username: auth.username() }" />
+    <button type="button" class="secondary" (click)="logout()">{{ 'session.logoutButton' | translate }}</button>
+  } @else {
+    <app-status-box kind="info" [message]="'session.notLoggedIn' | translate" />
+
+    <form class="session-form" [formGroup]="form" (ngSubmit)="submit()">
+      <input type="text" formControlName="username" [placeholder]="'session.usernamePlaceholder' | translate" autocomplete="username" />
+      <input type="password" formControlName="password" [placeholder]="'session.passwordPlaceholder' | translate" autocomplete="current-password" />
+      <button type="submit" [attr.aria-busy]="submitting()" [disabled]="form.invalid || submitting()">
+        {{ 'session.loginButton' | translate }}
+      </button>
+    </form>
+
+    <app-status-box kind="error" [message]="errorMessage()" />
+  }
+</section>

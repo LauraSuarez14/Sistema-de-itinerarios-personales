@@ -1,0 +1,12 @@
+<form class="create-form" [formGroup]="form" (ngSubmit)="submit()">
+  <input type="text" formControlName="userName" [placeholder]="'itineraries.create.userNamePlaceholder' | translate" required />
+  <input type="number" formControlName="originId" [placeholder]="'itineraries.create.originPlaceholder' | translate" min="1" required />
+  <input type="number" formControlName="destinationId" [placeholder]="'itineraries.create.destinationPlaceholder' | translate" min="1" required />
+  <input type="date" formControlName="travelDate" required />
+  <input type="number" formControlName="durationMinutes" [placeholder]="'itineraries.create.durationPlaceholder' | translate" min="1" required />
+  <button type="submit" [attr.aria-busy]="submitting()" [disabled]="submitting()">
+    {{ 'itineraries.create.submit' | translate }}
+  </button>
+</form>
+
+<app-status-box [kind]="resultKind()" [message]="resultMessage()" />

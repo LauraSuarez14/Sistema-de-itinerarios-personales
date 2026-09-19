@@ -1,0 +1,12 @@
+.session-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  .session-form {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,36 @@
+.status-box {
+  padding: 0.85rem 1.1rem;
+  border-radius: 12px;
+  margin: 0.85rem 0;
+  border: 1px solid transparent;
+  animation: fade-up 0.3s ease-out both;
+}
+
+.status-info {
+  background: var(--surface-tint-purple);
+  border-color: var(--brand-purple-300);
+  color: var(--text-strong);
+}
+
+.status-success {
+  background: var(--surface-tint-green);
+  border-color: var(--brand-green-300);
+  color: var(--brand-green-700);
+}
+
+.status-error {
+  background: var(--surface-tint-error);
+  border-color: var(--error-border);
+  color: var(--error-text);
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

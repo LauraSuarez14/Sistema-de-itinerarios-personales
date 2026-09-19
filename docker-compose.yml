@@ -192,9 +192,12 @@ services:
     networks: [itinerarios-net]
 
   frontend:
-    image: nginx:1.27-alpine
-    volumes:
-      - "./frontend:/usr/share/nginx/html:ro"
+    # Angular (build multi-stage: Node compila, nginx sirve el bundle
+    # resultante -- ver frontend/Dockerfile). Ya no es un bind mount de
+    # archivos estáticos sueltos.
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     ports: ["8080:80"]
     depends_on: [api-gateway]
     networks: [itinerarios-net]

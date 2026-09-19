@@ -1,0 +1,59 @@
+<section class="card">
+  <h2>{{ 'itineraries.create.title' | translate }}</h2>
+  <app-create-itinerary-form (created)="onCreated()" />
+</section>
+
+<section class="card">
+  <h2>{{ 'itineraries.list.title' | translate }}</h2>
+  <app-status-box kind="error" [message]="errorMessage()" />
+
+  @if (!auth.isLoggedIn()) {
+    <app-status-box kind="info" [message]="'itineraries.list.loginRequired' | translate" />
+  } @else {
+    <table>
+      <thead>
+        <tr>
+          <th>{{ 'itineraries.list.colId' | translate }}</th>
+          <th>{{ 'itineraries.list.colUser' | translate }}</th>
+          <th>{{ 'itineraries.list.colOrigin' | translate }}</th>
+          <th>{{ 'itineraries.list.colDestination' | translate }}</th>
+          <th>{{ 'itineraries.list.colDate' | translate }}</th>
+          <th>{{ 'itineraries.list.colDuration' | translate }}</th>
+          <th>{{ 'itineraries.list.colActions' | translate }}</th>
+        </tr>
+      </thead>
+      <tbody [@listStagger]="items()">
+        @for (item of items(); track item.id) {
+          <tr>
+            <td>{{ item.id }}</td>
+            <td>{{ item.user_name }}</td>
+            <td>{{ item.origin_airport.iata_code }} — {{ item.origin_airport.name }}</td>
+            <td>{{ item.destination_airport.iata_code }} — {{ item.destination_airport.name }}</td>
+            <td>{{ item.travel_date }}</td>
+            <td>{{ item.duration_minutes }}</td>
+            <td>
+              <button type="button" class="secondary" (click)="deleteItinerary(item.id)">
+                {{ 'itineraries.list.delete' | translate }}
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7">{{ 'itineraries.list.empty' | translate }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="pagination">
+      <button type="button" class="secondary" (click)="prevPage()" [disabled]="currentPage() <= 1">
+        {{ 'itineraries.list.prev' | translate }}
+      </button>
+      <span class="page-indicator">
+        {{ 'itineraries.list.pageIndicator' | translate: { page: currentPage(), total: total() } }}
+      </span>
+      <button type="button" class="secondary" (click)="nextPage()">{{ 'itineraries.list.next' | translate }}</button>
+      <button type="button" (click)="load()">{{ 'itineraries.list.refresh' | translate }}</button>
+    </div>
+  }
+</section>

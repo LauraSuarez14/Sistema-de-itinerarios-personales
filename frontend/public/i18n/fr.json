@@ -1,0 +1,70 @@
+{
+  "app": {
+    "title": "Système d'itinéraires personnels",
+    "subtitle": "Frontend Angular qui communique avec l'API Gateway"
+  },
+  "nav": {
+    "map": "Carte des aéroports",
+    "itineraries": "Itinéraires"
+  },
+  "theme": {
+    "toggleToDark": "Passer en mode sombre",
+    "toggleToLight": "Passer en mode clair"
+  },
+  "language": {
+    "label": "Langue"
+  },
+  "session": {
+    "title": "Session",
+    "notLoggedIn": "Vous n'êtes pas connecté. Vous pouvez voir la carte sans session, mais vous devez vous connecter pour créer, lister ou supprimer des itinéraires.",
+    "loggedInAs": "Connecté en tant que \"{{username}}\".",
+    "usernamePlaceholder": "Utilisateur (ex. viajero)",
+    "passwordPlaceholder": "Mot de passe",
+    "loginButton": "Se connecter",
+    "logoutButton": "Se déconnecter"
+  },
+  "map": {
+    "title": "Carte des aéroports (Colombie)",
+    "description": "Données publiques obtenues via l'API Gateway ; aucune session requise.",
+    "reload": "Recharger la carte",
+    "infoPlaceholderTitle": "Survolez un aéroport",
+    "infoPlaceholderBody": "Vous verrez ici son code IATA, son nom et sa ville.",
+    "coords": "Lat {{lat}}, Lon {{lon}}"
+  },
+  "itineraries": {
+    "create": {
+      "title": "Créer un itinéraire",
+      "userNamePlaceholder": "Nom de l'utilisateur",
+      "originPlaceholder": "Id aéroport de départ",
+      "destinationPlaceholder": "Id aéroport d'arrivée",
+      "durationPlaceholder": "Durée (minutes)",
+      "submit": "Créer l'itinéraire",
+      "loginRequired": "Vous devez vous connecter avant de créer un itinéraire.",
+      "success": "Itinéraire créé (id {{id}}) : {{origin}} -> {{destination}} le {{date}}."
+    },
+    "list": {
+      "title": "Itinéraires existants",
+      "colId": "Id",
+      "colUser": "Utilisateur",
+      "colOrigin": "Départ",
+      "colDestination": "Arrivée",
+      "colDate": "Date",
+      "colDuration": "Durée (min)",
+      "colActions": "Actions",
+      "delete": "Supprimer",
+      "empty": "Aucun itinéraire sur cette page.",
+      "loginRequired": "Connectez-vous pour voir les itinéraires.",
+      "prev": "« Précédent",
+      "next": "Suivant »",
+      "refresh": "Actualiser la liste",
+      "pageIndicator": "page {{page}} (total : {{total}})"
+    }
+  },
+  "footer": {
+    "apiBase": "API Gateway détecté sur :"
+  },
+  "errors": {
+    "network": "Impossible de contacter l'API Gateway ({{base}}). Est-il démarré ? Détail : {{detail}}",
+    "http": "{{title}} ({{status}}) : {{detail}}"
+  }
+}

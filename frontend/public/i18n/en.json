@@ -1,0 +1,70 @@
+{
+  "app": {
+    "title": "Personal Itineraries System",
+    "subtitle": "Angular frontend that talks to the API Gateway"
+  },
+  "nav": {
+    "map": "Airport map",
+    "itineraries": "Itineraries"
+  },
+  "theme": {
+    "toggleToDark": "Switch to dark mode",
+    "toggleToLight": "Switch to light mode"
+  },
+  "language": {
+    "label": "Language"
+  },
+  "session": {
+    "title": "Session",
+    "notLoggedIn": "You are not logged in. You can view the map without a session, but you need to log in to create, list or delete itineraries.",
+    "loggedInAs": "Logged in as \"{{username}}\".",
+    "usernamePlaceholder": "Username (e.g. viajero)",
+    "passwordPlaceholder": "Password",
+    "loginButton": "Log in",
+    "logoutButton": "Log out"
+  },
+  "map": {
+    "title": "Airport map (Colombia)",
+    "description": "Public data from the API Gateway; no session required.",
+    "reload": "Reload map",
+    "infoPlaceholderTitle": "Hover over an airport",
+    "infoPlaceholderBody": "You'll see its IATA code, name and city here.",
+    "coords": "Lat {{lat}}, Lon {{lon}}"
+  },
+  "itineraries": {
+    "create": {
+      "title": "Create itinerary",
+      "userNamePlaceholder": "User name",
+      "originPlaceholder": "Origin airport id",
+      "destinationPlaceholder": "Destination airport id",
+      "durationPlaceholder": "Duration (minutes)",
+      "submit": "Create itinerary",
+      "loginRequired": "You must log in before creating an itinerary.",
+      "success": "Itinerary created (id {{id}}): {{origin}} -> {{destination}} on {{date}}."
+    },
+    "list": {
+      "title": "Existing itineraries",
+      "colId": "Id",
+      "colUser": "User",
+      "colOrigin": "Origin",
+      "colDestination": "Destination",
+      "colDate": "Date",
+      "colDuration": "Duration (min)",
+      "colActions": "Actions",
+      "delete": "Delete",
+      "empty": "There are no itineraries on this page.",
+      "loginRequired": "Log in to see the itineraries.",
+      "prev": "« Previous",
+      "next": "Next »",
+      "refresh": "Refresh list",
+      "pageIndicator": "page {{page}} (total: {{total}})"
+    }
+  },
+  "footer": {
+    "apiBase": "API Gateway detected at:"
+  },
+  "errors": {
+    "network": "Could not reach the API Gateway ({{base}}). Is it running? Detail: {{detail}}",
+    "http": "{{title}} ({{status}}): {{detail}}"
+  }
+}

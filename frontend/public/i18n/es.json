@@ -1,0 +1,70 @@
+{
+  "app": {
+    "title": "Sistema de Itinerarios Personales",
+    "subtitle": "Frontend Angular que consume el API Gateway"
+  },
+  "nav": {
+    "map": "Mapa de aeropuertos",
+    "itineraries": "Itinerarios"
+  },
+  "theme": {
+    "toggleToDark": "Cambiar a modo oscuro",
+    "toggleToLight": "Cambiar a modo claro"
+  },
+  "language": {
+    "label": "Idioma"
+  },
+  "session": {
+    "title": "Sesión",
+    "notLoggedIn": "No has iniciado sesión. Puedes ver el mapa sin sesión, pero necesitas iniciar sesión para crear, listar o eliminar itinerarios.",
+    "loggedInAs": "Sesión iniciada como \"{{username}}\".",
+    "usernamePlaceholder": "Usuario (ej. viajero)",
+    "passwordPlaceholder": "Contraseña",
+    "loginButton": "Iniciar sesión",
+    "logoutButton": "Cerrar sesión"
+  },
+  "map": {
+    "title": "Mapa de aeropuertos (Colombia)",
+    "description": "Datos públicos obtenidos del API Gateway; no requiere sesión iniciada.",
+    "reload": "Recargar mapa",
+    "infoPlaceholderTitle": "Pasa el cursor sobre un aeropuerto",
+    "infoPlaceholderBody": "Aquí verás su código IATA, nombre y ciudad.",
+    "coords": "Lat {{lat}}, Lon {{lon}}"
+  },
+  "itineraries": {
+    "create": {
+      "title": "Crear itinerario",
+      "userNamePlaceholder": "Nombre del usuario",
+      "originPlaceholder": "Id aeropuerto origen",
+      "destinationPlaceholder": "Id aeropuerto destino",
+      "durationPlaceholder": "Duración (minutos)",
+      "submit": "Crear itinerario",
+      "loginRequired": "Debes iniciar sesión antes de crear un itinerario.",
+      "success": "Itinerario creado (id {{id}}): {{origin}} -> {{destination}} el {{date}}."
+    },
+    "list": {
+      "title": "Itinerarios existentes",
+      "colId": "Id",
+      "colUser": "Usuario",
+      "colOrigin": "Origen",
+      "colDestination": "Destino",
+      "colDate": "Fecha",
+      "colDuration": "Duración (min)",
+      "colActions": "Acciones",
+      "delete": "Eliminar",
+      "empty": "No hay itinerarios en esta página.",
+      "loginRequired": "Inicia sesión para ver los itinerarios.",
+      "prev": "« Anterior",
+      "next": "Siguiente »",
+      "refresh": "Actualizar lista",
+      "pageIndicator": "página {{page}} (total: {{total}})"
+    }
+  },
+  "footer": {
+    "apiBase": "API Gateway detectado en:"
+  },
+  "errors": {
+    "network": "No se pudo contactar al API Gateway ({{base}}). ¿Está corriendo? Detalle: {{detail}}",
+    "http": "{{title}} ({{status}}): {{detail}}"
+  }
+}

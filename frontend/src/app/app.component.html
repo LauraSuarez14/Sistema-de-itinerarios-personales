@@ -1,0 +1,53 @@
+<div class="app-shell-container">
+  <header class="app-header card">
+    <div class="app-header-top">
+      <hgroup>
+        <h1>{{ 'app.title' | translate }}</h1>
+        <p>{{ 'app.subtitle' | translate }}</p>
+      </hgroup>
+
+      <div class="app-controls">
+        <div class="lang-switch" role="group" [attr.aria-label]="'language.label' | translate">
+          @for (lang of languages; track lang) {
+            <button
+              type="button"
+              class="lang-btn"
+              [class.active]="currentLang === lang"
+              (click)="useLang(lang)"
+            >
+              {{ lang.toUpperCase() }}
+            </button>
+          }
+        </div>
+
+        <button type="button" class="theme-toggle" (click)="theme.toggle()" [attr.aria-label]="(theme.theme() === 'dark' ? 'theme.toggleToLight' : 'theme.toggleToDark') | translate">
+          @if (theme.theme() === 'dark') {
+            <svg class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="4.5" />
+              <path d="M12 2.5v2.5M12 19v2.5M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2.5 12H5M19 12h2.5M4.2 19.8L6 18M18 6l1.8-1.8" />
+            </svg>
+          } @else {
+            <svg class="theme-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20.5 14.5A8.5 8.5 0 019.5 3.5a.75.75 0 00-.9-.9A9.5 9.5 0 1021.4 15.4a.75.75 0 00-.9-.9z" />
+            </svg>
+          }
+        </button>
+      </div>
+    </div>
+
+    <nav class="app-nav">
+      <a routerLink="/map" routerLinkActive="active">{{ 'nav.map' | translate }}</a>
+      <a routerLink="/itineraries" routerLinkActive="active">{{ 'nav.itineraries' | translate }}</a>
+    </nav>
+  </header>
+
+  <app-session-bar />
+
+  <main class="route-container" [@routeAnimations]="outlet.isActivated ? outlet.activatedRouteData['animation'] : ''">
+    <router-outlet #outlet="outlet" />
+  </main>
+
+  <footer class="app-footer">
+    <small>{{ 'footer.apiBase' | translate }} <code>{{ api.apiBase }}</code></small>
+  </footer>
+</div>

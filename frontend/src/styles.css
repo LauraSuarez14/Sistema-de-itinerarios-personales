@@ -1,0 +1,220 @@
+/* Estilos globales: paleta morado + verde, con soporte de modo claro/oscuro
+   vía variables CSS conmutadas por [data-theme] (ver ThemeService). */
+
+:root {
+  --brand-purple-900: #3b0764;
+  --brand-purple-700: #6d28d9;
+  --brand-purple-600: #7c3aed;
+  --brand-purple-500: #8b5cf6;
+  --brand-purple-300: #c4b5fd;
+  --brand-purple-100: #f3eefe;
+
+  --brand-green-700: #047857;
+  --brand-green-600: #059669;
+  --brand-green-500: #10b981;
+  --brand-green-300: #6ee7b7;
+  --brand-green-100: #e6fbf1;
+
+  --pico-primary: var(--brand-purple-600);
+  --pico-primary-background: var(--brand-purple-600);
+  --pico-primary-hover: var(--brand-purple-700);
+  --pico-primary-hover-background: var(--brand-purple-700);
+  --pico-primary-focus: rgba(124, 58, 237, 0.35);
+  --pico-primary-inverse: #ffffff;
+  --pico-secondary: var(--brand-green-600);
+  --pico-secondary-background: var(--brand-green-600);
+  --pico-secondary-hover: var(--brand-green-700);
+  --pico-secondary-hover-background: var(--brand-green-700);
+  --pico-secondary-focus: rgba(5, 150, 105, 0.3);
+  --pico-secondary-inverse: #ffffff;
+  --pico-border-radius: 14px;
+}
+
+/* ------------------------------ Tema: claro -------------------------------- */
+:root,
+:root[data-theme='light'] {
+  --bg-gradient: radial-gradient(circle at 12% 0%, var(--brand-purple-100) 0%, transparent 45%),
+    radial-gradient(circle at 100% 10%, var(--brand-green-100) 0%, transparent 40%),
+    linear-gradient(180deg, #fbfaff 0%, #f4fbf8 100%);
+  --surface: #ffffff;
+  --surface-alt: #faf8ff;
+  --surface-tint-purple: var(--brand-purple-100);
+  --surface-tint-green: var(--brand-green-100);
+  --surface-tint-error: #fdecea;
+  --error-border: #f5c2c0;
+  --error-text: #7a1f1a;
+  --text-strong: var(--brand-purple-900);
+  --text-body: #241f3d;
+  --text-muted: rgba(36, 31, 61, 0.65);
+  --border-soft: rgba(124, 58, 237, 0.12);
+  --card-shadow: 0 10px 30px -18px rgba(59, 7, 100, 0.25);
+  --card-shadow-hover: 0 16px 36px -16px rgba(59, 7, 100, 0.32);
+  --map-panel-gradient: linear-gradient(160deg, var(--brand-purple-100) 0%, var(--brand-green-100) 100%);
+  --geo-land: #f3eefe;
+  --geo-ocean: #e6fbf1;
+  --geo-country: #c4b5fd;
+
+  --pico-background-color: transparent;
+  --pico-color: var(--text-body);
+  --pico-h1-color: var(--brand-purple-900);
+  --pico-h2-color: var(--brand-purple-700);
+  --pico-h3-color: var(--brand-purple-700);
+  --pico-muted-color: var(--text-muted);
+  --pico-muted-border-color: var(--border-soft);
+  --pico-code-color: var(--brand-purple-700);
+  --pico-code-background-color: var(--brand-purple-100);
+}
+
+/* ------------------------------ Tema: oscuro -------------------------------- */
+:root[data-theme='dark'] {
+  --bg-gradient: radial-gradient(circle at 12% 0%, rgba(124, 58, 237, 0.18) 0%, transparent 45%),
+    radial-gradient(circle at 100% 10%, rgba(16, 185, 129, 0.14) 0%, transparent 40%),
+    linear-gradient(180deg, #14101f 0%, #0f1a17 100%);
+  --surface: #1c1730;
+  --surface-alt: #221c3a;
+  --surface-tint-purple: rgba(124, 58, 237, 0.16);
+  --surface-tint-green: rgba(16, 185, 129, 0.14);
+  --surface-tint-error: rgba(239, 68, 68, 0.14);
+  --error-border: rgba(239, 68, 68, 0.4);
+  --error-text: #fca5a5;
+  --text-strong: var(--brand-purple-300);
+  --text-body: #ece8fb;
+  --text-muted: rgba(236, 232, 251, 0.65);
+  --border-soft: rgba(196, 181, 253, 0.16);
+  --card-shadow: 0 10px 30px -14px rgba(0, 0, 0, 0.6);
+  --card-shadow-hover: 0 16px 40px -14px rgba(0, 0, 0, 0.7);
+  --map-panel-gradient: linear-gradient(160deg, rgba(124, 58, 237, 0.22) 0%, rgba(16, 185, 129, 0.18) 100%);
+  --geo-land: #241c3d;
+  --geo-ocean: #12281f;
+  --geo-country: #6d28d9;
+
+  --pico-background-color: transparent;
+  --pico-color: var(--text-body);
+  --pico-h1-color: var(--brand-purple-300);
+  --pico-h2-color: var(--brand-purple-300);
+  --pico-h3-color: var(--brand-purple-300);
+  --pico-muted-color: var(--text-muted);
+  --pico-muted-border-color: var(--border-soft);
+  --pico-card-background-color: var(--surface);
+  --pico-code-color: var(--brand-purple-300);
+  --pico-code-background-color: rgba(124, 58, 237, 0.18);
+  --pico-form-element-background-color: var(--surface-alt);
+  --pico-form-element-border-color: var(--border-soft);
+  --pico-form-element-color: var(--text-body);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg-gradient);
+  background-attachment: fixed;
+  color: var(--text-body);
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+h1,
+h2,
+h3 {
+  font-family: 'Poppins', system-ui, sans-serif;
+}
+
+a {
+  color: var(--brand-purple-600);
+}
+
+.app-shell-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+@media (max-width: 640px) {
+  .app-shell-container {
+    padding: 0 1rem;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 18px;
+  box-shadow: var(--card-shadow);
+  padding: 1.75rem 2rem;
+  position: relative;
+  overflow: hidden;
+  animation: fade-up 0.5s ease-out both;
+  transition: box-shadow 0.25s ease, transform 0.25s ease, background-color 0.25s ease;
+}
+
+.card:hover {
+  box-shadow: var(--card-shadow-hover);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--brand-purple-600), var(--brand-green-500));
+}
+
+.card h2 {
+  margin-top: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card h2::before {
+  content: '';
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand-purple-500), var(--brand-green-500));
+  display: inline-block;
+}
+
+button {
+  font-family: inherit;
+}
+
+table thead tr {
+  background: linear-gradient(120deg, var(--brand-purple-600), var(--brand-green-600));
+}
+
+table thead th {
+  color: #ffffff !important;
+  border: none;
+}
+
+table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+table tbody tr:nth-child(even) {
+  background: var(--surface-tint-purple);
+}
+
+table tbody tr:hover {
+  background: var(--surface-tint-green);
+}

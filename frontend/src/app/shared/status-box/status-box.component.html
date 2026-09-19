@@ -1,0 +1,5 @@
+@if (message) {
+  <div class="status-box" [class.status-info]="kind === 'info'" [class.status-success]="kind === 'success'" [class.status-error]="kind === 'error'">
+    {{ message }}
+  </div>
+}

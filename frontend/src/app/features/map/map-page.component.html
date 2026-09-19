@@ -1,0 +1,34 @@
+<section class="card">
+  <h2>{{ 'map.title' | translate }}</h2>
+  <p>{{ 'map.description' | translate }}</p>
+
+  <app-status-box kind="error" [message]="errorMessage()" />
+
+  <div class="map-layout">
+    <div #mapDiv class="map-canvas"></div>
+
+    <aside class="airport-info-panel">
+      @if (parsedSelected(); as info) {
+        <div class="airport-info-card" [@panelUpdate]="selected()?.id">
+          <span class="airport-info-badge">{{ info.iata }}</span>
+          <h3>{{ info.name }}</h3>
+          @if (info.city) {
+            <p class="airport-info-city">{{ info.city }}</p>
+          }
+          <p class="airport-info-coords">
+            {{ 'map.coords' | translate: { lat: info.lat.toFixed(4), lon: info.lon.toFixed(4) } }}
+          </p>
+        </div>
+      } @else {
+        <div class="airport-info-placeholder">
+          <strong>{{ 'map.infoPlaceholderTitle' | translate }}</strong>
+          <p>{{ 'map.infoPlaceholderBody' | translate }}</p>
+        </div>
+      }
+    </aside>
+  </div>
+
+  <button type="button" class="secondary" [attr.aria-busy]="loading()" (click)="load()">
+    {{ 'map.reload' | translate }}
+  </button>
+</section>
