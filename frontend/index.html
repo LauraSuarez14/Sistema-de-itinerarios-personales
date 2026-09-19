@@ -9,6 +9,9 @@
        semántico) para no tener que escribir un sistema de diseño propio en
        un proyecto académico. -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="./styles.css" />
 
   <!-- Plotly.js vía CDN oficial: este frontend corre en un contenedor
@@ -51,7 +54,15 @@
         no requiere sesión iniciada.
       </p>
       <div id="map-error" class="status-box status-error" hidden></div>
-      <div id="airports-map"></div>
+      <div class="map-layout">
+        <div id="airports-map" class="map-canvas"></div>
+        <aside id="airport-info-panel" class="airport-info-panel">
+          <div class="airport-info-placeholder">
+            <strong>Pasa el cursor sobre un aeropuerto</strong>
+            <p>Aquí verás su código IATA, nombre y ciudad.</p>
+          </div>
+        </aside>
+      </div>
       <button type="button" id="reload-map-btn" class="secondary">Recargar mapa</button>
     </section>
 

@@ -67,7 +67,11 @@ class RabbitMQPublisher(EventPublisherPort):
     def publish(self, routing_key: str, payload: dict) -> bool:
         try:
             channel = self._ensure_channel()
-            return channel.basic_publish(
+            # `basic_publish` no devuelve un booleano: con `confirm_delivery()`
+            # activo, devuelve None si el broker confirmo la entrega, y lanza
+            # una excepcion (UnroutableError/NackError) si no. Si no lanzo,
+            # fue confirmado.
+            channel.basic_publish(
                 exchange=self._exchange,
                 routing_key=routing_key,
                 body=json.dumps(payload).encode("utf-8"),
@@ -77,6 +81,7 @@ class RabbitMQPublisher(EventPublisherPort):
                 ),
                 mandatory=True,
             )
+            return True
         except UnroutableError:
             # El mensaje no pudo enrutarse a ninguna cola (nadie escuchando
             # el exchange todavia); la conexion sigue sana, solo el mensaje

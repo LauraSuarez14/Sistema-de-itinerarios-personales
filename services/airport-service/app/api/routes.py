@@ -1,6 +1,8 @@
 """Routers REST del Airport Service, bajo el prefijo versionado /api/v1."""
 from __future__ import annotations
 
+from dataclasses import asdict
+
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 
 from app.api.dependencies import (
@@ -41,7 +43,7 @@ async def list_airports(
     except ExternalSourceUnavailableError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     return PageOut(
-        items=[AirportOut(**vars(a)) for a in result.items],
+        items=[AirportOut(**asdict(a)) for a in result.items],
         page=result.page,
         page_size=result.page_size,
         total=result.total,
@@ -83,7 +85,7 @@ async def get_airport(
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     if airport is None:
         raise HTTPException(status_code=404, detail=f"airport {airport_id} not found")
-    return AirportOut(**vars(airport))
+    return AirportOut(**asdict(airport))
 
 
 @oauth_router.post("/oauth/token", response_model=TokenResponse,

@@ -1,43 +1,341 @@
-/* Estilos propios mínimos encima de Pico.css (que ya da tipografía, formularios
-   y tablas razonables). Solo se ajusta lo específico de esta pantalla. */
+/* Estilos propios encima de Pico.css: paleta morado + verde, tarjetas con
+   sombra y pequeñas animaciones para darle vida a un frontend que por lo
+   demás es HTML/CSS/JS plano (sin build step). */
+
+:root {
+  --brand-purple-900: #3b0764;
+  --brand-purple-700: #6d28d9;
+  --brand-purple-600: #7c3aed;
+  --brand-purple-500: #8b5cf6;
+  --brand-purple-300: #c4b5fd;
+  --brand-purple-100: #f3eefe;
+
+  --brand-green-700: #047857;
+  --brand-green-600: #059669;
+  --brand-green-500: #10b981;
+  --brand-green-300: #6ee7b7;
+  --brand-green-100: #e6fbf1;
+
+  --ink: #241f3d;
+  --surface: #ffffff;
+
+  /* Overrides de Pico.css: así los <button>, <a>, <mark>, etc. que ya trae
+     el framework heredan la paleta morado/verde sin reescribir cada widget. */
+  --pico-primary: var(--brand-purple-600);
+  --pico-primary-background: var(--brand-purple-600);
+  --pico-primary-hover: var(--brand-purple-700);
+  --pico-primary-hover-background: var(--brand-purple-700);
+  --pico-primary-focus: rgba(124, 58, 237, 0.35);
+  --pico-primary-inverse: #ffffff;
+  --pico-primary-underline: var(--brand-purple-600);
+
+  --pico-secondary: var(--brand-green-600);
+  --pico-secondary-background: var(--brand-green-600);
+  --pico-secondary-hover: var(--brand-green-700);
+  --pico-secondary-hover-background: var(--brand-green-700);
+  --pico-secondary-focus: rgba(5, 150, 105, 0.3);
+  --pico-secondary-inverse: #ffffff;
+  --pico-secondary-underline: var(--brand-green-600);
+
+  --pico-h1-color: var(--brand-purple-900);
+  --pico-h2-color: var(--brand-purple-700);
+  --pico-h3-color: var(--brand-purple-700);
+  --pico-border-radius: 14px;
+  --pico-code-color: var(--brand-purple-700);
+  --pico-code-background-color: var(--brand-purple-100);
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 body {
   max-width: 100%;
+  font-family: "Inter", var(--pico-font-family, sans-serif);
+  background: radial-gradient(circle at 12% 0%, var(--brand-purple-100) 0%, transparent 45%),
+    radial-gradient(circle at 100% 10%, var(--brand-green-100) 0%, transparent 40%),
+    linear-gradient(180deg, #fbfaff 0%, #f4fbf8 100%);
+  background-attachment: fixed;
+  color: var(--ink);
 }
+
+h1,
+h2,
+h3 {
+  font-family: "Poppins", var(--pico-font-family, sans-serif);
+}
+
+/* --------------------------------- Header --------------------------------- */
+
+header.container {
+  margin-top: 1.5rem;
+  padding: 2rem 2.25rem;
+  border-radius: 20px;
+  background: linear-gradient(120deg, var(--brand-purple-700) 0%, var(--brand-purple-600) 45%, var(--brand-green-600) 100%);
+  box-shadow: 0 18px 40px -18px rgba(109, 40, 217, 0.55);
+  animation: fade-up 0.5s ease-out both;
+}
+
+header.container h1,
+header.container p {
+  color: #ffffff !important;
+}
+
+header.container h1 {
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+}
+
+header.container p {
+  opacity: 0.92;
+}
+
+/* ---------------------------------- Cards --------------------------------- */
 
 section {
-  margin-bottom: 2.5rem;
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid var(--pico-muted-border-color);
+  margin-bottom: 1.75rem;
+  padding: 1.75rem 2rem;
+  background: var(--surface);
+  border: 1px solid rgba(124, 58, 237, 0.1);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px -18px rgba(59, 7, 100, 0.25);
+  position: relative;
+  overflow: hidden;
+  animation: fade-up 0.5s ease-out both;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
 }
 
-#airports-map {
-  width: 100%;
-  height: 520px;
+section:hover {
+  box-shadow: 0 16px 36px -16px rgba(59, 7, 100, 0.32);
 }
+
+section::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--brand-purple-600), var(--brand-green-500));
+}
+
+section h2 {
+  margin-top: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+section h2::before {
+  content: "";
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--brand-purple-500), var(--brand-green-500));
+  display: inline-block;
+}
+
+/* -------------------------------- Botones --------------------------------- */
+
+button,
+[type="submit"],
+[type="button"] {
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  font-weight: 600;
+}
+
+button:not(.secondary):not(.contrast) {
+  background: linear-gradient(120deg, var(--brand-purple-600), var(--brand-purple-700));
+  border: none;
+  box-shadow: 0 8px 18px -8px rgba(124, 58, 237, 0.55);
+}
+
+button:not(.secondary):not(.contrast):hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px -8px rgba(124, 58, 237, 0.6);
+}
+
+button.secondary {
+  background: linear-gradient(120deg, var(--brand-green-500), var(--brand-green-600));
+  border: none;
+  color: #ffffff;
+  box-shadow: 0 8px 18px -8px rgba(5, 150, 105, 0.5);
+}
+
+button.secondary:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  filter: grayscale(0.4);
+  opacity: 0.6;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ------------------------------- Status boxes ------------------------------ */
 
 .status-box {
-  padding: 0.75rem 1rem;
-  border-radius: var(--pico-border-radius);
-  margin: 0.75rem 0;
+  padding: 0.85rem 1.1rem;
+  border-radius: 12px;
+  margin: 0.85rem 0;
+  border: 1px solid transparent;
+  animation: fade-up 0.3s ease-out both;
 }
 
 .status-info {
-  background: var(--pico-card-sectioning-background-color);
-  border: 1px solid var(--pico-muted-border-color);
+  background: var(--brand-purple-100);
+  border-color: var(--brand-purple-300);
+  color: var(--brand-purple-900);
 }
 
 .status-error {
   background: #fdecea;
-  border: 1px solid #f5c2c0;
+  border-color: #f5c2c0;
   color: #7a1f1a;
 }
 
 .status-success {
-  background: #e7f6ec;
-  border: 1px solid #b9e4c4;
-  color: #1e5631;
+  background: var(--brand-green-100);
+  border-color: var(--brand-green-300);
+  color: var(--brand-green-700);
 }
+
+/* ---------------------------------- Mapa ----------------------------------- */
+
+.map-layout {
+  display: flex;
+  gap: 1.25rem;
+  align-items: stretch;
+}
+
+.map-canvas {
+  flex: 1 1 65%;
+  min-width: 0;
+  height: 520px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(160deg, var(--brand-purple-100), var(--brand-green-100));
+  box-shadow: inset 0 0 0 1px rgba(124, 58, 237, 0.12);
+}
+
+.airport-info-panel {
+  flex: 0 0 30%;
+  min-width: 220px;
+  border-radius: 14px;
+  background: linear-gradient(160deg, var(--brand-purple-100) 0%, var(--brand-green-100) 100%);
+  border: 1px solid rgba(124, 58, 237, 0.15);
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.airport-info-placeholder strong {
+  display: block;
+  color: var(--brand-purple-700);
+  margin-bottom: 0.4rem;
+}
+
+.airport-info-placeholder p {
+  margin: 0;
+  color: var(--ink);
+  opacity: 0.7;
+  font-size: 0.92rem;
+}
+
+.airport-info-card {
+  width: 100%;
+  text-align: left;
+  animation: fade-up 0.25s ease-out both;
+}
+
+.airport-info-badge {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: linear-gradient(120deg, var(--brand-purple-600), var(--brand-green-500));
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.6rem;
+}
+
+.airport-info-card h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.15rem;
+  line-height: 1.3;
+  color: var(--brand-purple-900);
+}
+
+.airport-info-city {
+  margin: 0 0 0.6rem 0;
+  font-weight: 600;
+  color: var(--brand-green-700);
+}
+
+.airport-info-coords {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--ink);
+  opacity: 0.65;
+  font-family: monospace;
+}
+
+@media (max-width: 768px) {
+  .map-layout {
+    flex-direction: column;
+  }
+
+  .map-canvas {
+    flex-basis: auto;
+    height: 380px;
+  }
+
+  .airport-info-panel {
+    flex-basis: auto;
+    min-height: 110px;
+  }
+}
+
+/* --------------------------------- Tablas ---------------------------------- */
+
+table thead tr {
+  background: linear-gradient(120deg, var(--brand-purple-600), var(--brand-green-600));
+}
+
+table thead th {
+  color: #ffffff !important;
+  border: none;
+}
+
+table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+table tbody tr:nth-child(even) {
+  background: var(--brand-purple-100);
+}
+
+table tbody tr:hover {
+  background: var(--brand-green-100);
+}
+
+table td,
+table th {
+  vertical-align: middle;
+}
+
+/* ------------------------------- Paginación --------------------------------- */
 
 .pagination {
   display: flex;
@@ -46,12 +344,15 @@ section {
   flex-wrap: wrap;
 }
 
-table td, table th {
-  vertical-align: middle;
+#page-indicator {
+  font-weight: 600;
+  color: var(--brand-purple-700);
 }
 
-@media (max-width: 640px) {
-  #airports-map {
-    height: 360px;
-  }
+/* --------------------------------- Footer ---------------------------------- */
+
+footer.container {
+  text-align: center;
+  padding: 1.5rem 0 2.5rem;
+  opacity: 0.75;
 }

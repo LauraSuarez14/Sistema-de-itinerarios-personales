@@ -56,10 +56,17 @@ deploy_function() {
 }
 
 # --- SendNotificationFunction (activada por evento via notification-bridge) --
+# NOTIFICATION_DB_PATH se deja en /tmp (el default de la funcion, ver
+# functions/send_notification_function/handler.py): el ejecutor Lambda real
+# de LocalStack (Docker-outside-of-Docker) corre cada invocacion en un
+# contenedor aislado tipo AWS Lambda real, que solo permite escribir en
+# /tmp -- una ruta fuera de /tmp (como el volumen nombrado
+# localstack-notifications-data que monta el propio contenedor de
+# LocalStack) no es escribible desde ahi.
 deploy_function \
   "SendNotificationFunction" \
   "${FUNCTIONS_DIR}/send_notification_function" \
-  '{"Variables":{"NOTIFICATION_DB_PATH":"/var/lib/localstack/notifications/notifications.db"}}'
+  '{"Variables":{}}'
 
 # --- GenerateItineraryReportFunction (invocada bajo demanda) -----------------
 # INTERNAL_SERVICE_TOKEN se deja vacio a proposito: es configuracion pendiente

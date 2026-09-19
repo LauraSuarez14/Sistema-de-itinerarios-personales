@@ -95,7 +95,7 @@ def update_itinerary(
     return ItineraryResponse.from_domain(itinerary)
 
 
-@router.delete("/{itinerary_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{itinerary_id}", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
 def delete_itinerary(
     itinerary_id: UUID,
     use_case: Annotated[DeleteItineraryUseCase, Depends(get_delete_use_case)],

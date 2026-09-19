@@ -51,7 +51,7 @@ RUN python -m grpc_tools.protoc \
         app/infrastructure/grpc_client/airport_pb2_grpc.py \
     && rm -rf /tmp/proto
 
-RUN chmod +x ./docker-entrypoint.sh
+RUN sed -i 's/\r$//' ./docker-entrypoint.sh && chmod +x ./docker-entrypoint.sh
 
 ENV PYTHONUNBUFFERED=1 \
     ITINERARY_HTTP_PORT=8002

@@ -132,6 +132,51 @@ function authHeaders() {
 // ---------------------------------- Mapa ------------------------------------
 
 const mapError = document.getElementById("map-error");
+const airportInfoPanel = document.getElementById("airport-info-panel");
+
+/** Reconstruye el desglose (código IATA, nombre, ciudad) a partir del
+ * `label` que ya viene formateado desde el dominio de Airport Service
+ * (`"IATA — Nombre (Ciudad)"`, ver Airport.to_plotly_point()). */
+function parseAirportLabel(label) {
+  const match = /^(.*?)\s—\s(.*?)\s\(([^)]*)\)$/.exec(label || "");
+  if (!match) {
+    return { iata: "—", name: label || "Aeropuerto", city: "" };
+  }
+  const [, iata, name, city] = match;
+  return { iata, name, city };
+}
+
+/** Pinta el detalle del aeropuerto señalado en el recuadro lateral del mapa. */
+function renderAirportInfo(point) {
+  const { iata, name, city } = parseAirportLabel(point.label);
+
+  airportInfoPanel.innerHTML = "";
+  const card = document.createElement("div");
+  card.className = "airport-info-card";
+
+  const badge = document.createElement("span");
+  badge.className = "airport-info-badge";
+  badge.textContent = iata;
+  card.appendChild(badge);
+
+  const title = document.createElement("h3");
+  title.textContent = name;
+  card.appendChild(title);
+
+  if (city) {
+    const cityEl = document.createElement("p");
+    cityEl.className = "airport-info-city";
+    cityEl.textContent = city;
+    card.appendChild(cityEl);
+  }
+
+  const coords = document.createElement("p");
+  coords.className = "airport-info-coords";
+  coords.textContent = `Lat ${point.lat.toFixed(4)}, Lon ${point.lon.toFixed(4)}`;
+  card.appendChild(coords);
+
+  airportInfoPanel.appendChild(card);
+}
 
 async function loadAirportsMap() {
   hideBox(mapError);
@@ -154,8 +199,17 @@ async function loadAirportsMap() {
     mode: "markers",
     lat: points.map((p) => p.lat),
     lon: points.map((p) => p.lon),
-    text: points.map((p) => p.label),
-    marker: { size: 8, color: "#1f6f5c" },
+    // El tooltip flotante nativo de Plotly se apaga (hoverinfo: "none");
+    // el detalle se muestra en el recuadro lateral (#airport-info-panel)
+    // en su lugar, vía los eventos plotly_hover/plotly_click de abajo.
+    hoverinfo: "none",
+    customdata: points,
+    marker: {
+      size: 9,
+      color: "#10b981",
+      line: { color: "#7c3aed", width: 1.5 },
+      opacity: 0.9,
+    },
   };
 
   const layout = {
@@ -166,13 +220,25 @@ async function loadAirportsMap() {
       lataxis: { range: [-5, 14] },
       lonaxis: { range: [-82, -66] },
       showland: true,
-      landcolor: "#eef2f0",
+      landcolor: "#f3eefe",
       showcountries: true,
+      countrycolor: "#c4b5fd",
+      showocean: true,
+      oceancolor: "#e6fbf1",
+      bgcolor: "rgba(0,0,0,0)",
     },
+    paper_bgcolor: "rgba(0,0,0,0)",
     margin: { l: 0, r: 0, t: 10, b: 0 },
   };
 
-  Plotly.newPlot("airports-map", [trace], layout, { responsive: true });
+  const mapDiv = await Plotly.newPlot("airports-map", [trace], layout, { responsive: true });
+
+  const onPointSignaled = (event) => {
+    const point = event.points && event.points[0] && event.points[0].customdata;
+    if (point) renderAirportInfo(point);
+  };
+  mapDiv.on("plotly_hover", onPointSignaled);
+  mapDiv.on("plotly_click", onPointSignaled);
 }
 
 document.getElementById("reload-map-btn").addEventListener("click", loadAirportsMap);

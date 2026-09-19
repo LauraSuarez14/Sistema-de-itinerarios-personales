@@ -16,20 +16,18 @@ notificaciones "enviadas" (simuladas), en un archivo en `NOTIFICATION_DB_PATH`.
 IMPORTANTE: `/tmp` dentro de un entorno de ejecucion Lambda es efimero por
 diseno (el proveedor puede reciclar el sandbox de ejecucion en cualquier
 momento, y las escrituras no sobreviven mas alla de la vida del contenedor
-subyacente). En una nube real, el reemplazo natural seria DynamoDB o RDS
-(almacenamiento gestionado, fuera del ciclo de vida de la funcion). Para
-este proyecto academico, sin embargo, queremos poder observar entre
-invocaciones (y entre reinicios de `docker compose`) que la deduplicacion
-por `event_id` realmente funciona, asi que `infra/localstack/init/01_create_functions.sh`
-configura `NOTIFICATION_DB_PATH` apuntando a una ruta DENTRO del propio
-contenedor de LocalStack (que es donde corre el codigo de la funcion cuando
-`LAMBDA_EXECUTOR=local`) que a su vez esta respaldada por un volumen Docker
-nombrado (`localstack-notifications-data`, declarado en `docker-compose.yml`
-en el servicio `localstack`). Asi la "base de datos" de esta funcion
-sobrevive a un `docker compose restart`, aunque conceptualmente se siga
-tratando como almacenamiento efimero/local de la funcion (nunca compartido
-directamente por otro servicio, que es justamente el punto de tener "su
-propia base de datos").
+subyacente) y ademas es la UNICA ruta escribible: el ejecutor Lambda real de
+LocalStack (Docker-outside-of-Docker, ver `docker-compose.yml`, servicio
+`localstack`) corre cada invocacion en un contenedor aislado tipo AWS Lambda
+real, que rechaza escrituras fuera de `/tmp` (`PermissionError`). En una
+nube real, el reemplazo natural para persistencia real seria DynamoDB o RDS
+(almacenamiento gestionado, fuera del ciclo de vida de la funcion); para
+este proyecto academico se deja `NOTIFICATION_DB_PATH` sin configurar
+(usa `DEFAULT_DB_PATH` = `/tmp/notifications.db`), asi que la deduplicacion
+por `event_id` se puede observar entre invocaciones mientras el contenedor
+de ejecucion siga "caliente" (reutilizado por LocalStack), pero no
+sobrevive a que LocalStack recicle ese contenedor ni a un
+`docker compose restart`.
 """
 from __future__ import annotations
 
