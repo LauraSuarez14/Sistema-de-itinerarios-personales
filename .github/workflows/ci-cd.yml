@@ -16,6 +16,13 @@ env:
   REGISTRY: ghcr.io
   IMAGE_PREFIX: ${{ github.repository }}
 
+# Sin esto, GITHUB_TOKEN usa el permiso por defecto del repo (a menudo
+# solo lectura), y `docker push` a GHCR falla con 403 aunque el login
+# previo haya funcionado.
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   test:
     name: test (${{ matrix.service }})
@@ -67,6 +74,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     strategy:
+      fail-fast: false
       matrix:
         service:
           - airport-service
@@ -75,6 +83,13 @@ jobs:
           - notification-bridge
     steps:
       - uses: actions/checkout@v4
+
+      # Docker exige que el nombre del repositorio de imagen sea minusculas;
+      # `github.repository` conserva las mayusculas reales del repo
+      # (p.ej. "LauraSuarez14/..."), lo que produce un tag invalido y hace
+      # fallar el build/push al instante (antes de construir nada).
+      - name: Normalizar nombre de imagen a minusculas
+        run: echo "IMAGE_PREFIX=$(echo '${{ env.IMAGE_PREFIX }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
 
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -100,6 +115,8 @@ jobs:
     if: github.event_name == 'push'
     steps:
       - uses: actions/checkout@v4
+      - name: Normalizar nombre de imagen a minusculas
+        run: echo "IMAGE_PREFIX=$(echo '${{ env.IMAGE_PREFIX }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
