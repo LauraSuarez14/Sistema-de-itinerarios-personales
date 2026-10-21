@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>🌸 Recuperación de Diseño — Sistema de Itinerarios Personales</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+<style>
+  :root {
+    --purple-900: #3b0764;
+    --purple-700: #6d28d9;
+    --purple-600: #7c3aed;
+    --purple-500: #8b5cf6;
+    --purple-300: #c4b5fd;
+    --purple-100: #f3eefe;
+    --green-700: #047857;
+    --green-600: #059669;
+    --green-500: #10b981;
+    --green-300: #6ee7b7;
+    --green-100: #e6fbf1;
+    --ink: #241f3d;
+    --surface: #ffffff;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: "Inter", sans-serif;
+    color: var(--ink);
+    background: radial-gradient(circle at 8% 0%, var(--purple-100) 0%, transparent 40%),
+      radial-gradient(circle at 100% 8%, var(--green-100) 0%, transparent 38%),
+      linear-gradient(180deg, #fbfaff 0%, #f4fbf8 100%);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3 { font-family: "Poppins", sans-serif; }
+
+  /* --------------------------- flor decorativa SVG --------------------------- */
+  .flower-corner {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    opacity: 0.85;
+    pointer-events: none;
+  }
+  .flower-corner.tl { top: -20px; left: -20px; transform: rotate(-15deg); }
+  .flower-corner.br { bottom: -20px; right: -20px; transform: rotate(160deg); }
+
+  .flower-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin: 2.5rem 0 1.5rem;
+    color: var(--purple-300);
+  }
+  .flower-divider::before, .flower-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--purple-300), transparent);
+  }
+  .flower-divider svg { width: 28px; height: 28px; }
+
+  /* --------------------------------- layout --------------------------------- */
+  .page {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1.5rem 4rem;
+  }
+
+  header.hero {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(120deg, var(--purple-700) 0%, var(--purple-600) 45%, var(--green-600) 100%);
+    color: #fff;
+    padding: 3rem 2.5rem;
+    border-radius: 0 0 28px 28px;
+    box-shadow: 0 18px 40px -18px rgba(109, 40, 217, 0.55);
+    margin-bottom: 2rem;
+  }
+  header.hero h1 {
+    font-size: 2.1rem;
+    margin: 0 0 0.5rem;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  }
+  header.hero p { margin: 0.25rem 0; opacity: 0.95; max-width: 720px; }
+  header.hero .badge {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.35rem 0.9rem;
+    background: rgba(255,255,255,0.18);
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  nav.toc {
+    position: sticky;
+    top: 1.5rem;
+    align-self: start;
+    background: var(--surface);
+    border: 1px solid rgba(124,58,237,0.12);
+    border-radius: 18px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 30px -18px rgba(59,7,100,0.25);
+    max-height: calc(100vh - 3rem);
+    overflow-y: auto;
+  }
+  nav.toc h3 {
+    margin: 0 0 0.75rem;
+    color: var(--purple-700);
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  nav.toc ol { margin: 0; padding-left: 1.1rem; font-size: 0.88rem; line-height: 1.7; }
+  nav.toc a { color: var(--ink); text-decoration: none; opacity: 0.8; }
+  nav.toc a:hover { color: var(--purple-600); opacity: 1; text-decoration: underline; }
+
+  main { min-width: 0; }
+
+  section.card {
+    background: var(--surface);
+    border: 1px solid rgba(124,58,237,0.1);
+    border-radius: 18px;
+    box-shadow: 0 10px 30px -18px rgba(59,7,100,0.25);
+    padding: 1.85rem 2.1rem;
+    margin-bottom: 1.75rem;
+    position: relative;
+    overflow: hidden;
+  }
+  section.card::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--purple-600), var(--green-500));
+  }
+  section.card h2 {
+    margin-top: 0;
+    color: var(--purple-700);
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+  section.card h2 svg { width: 1.3rem; height: 1.3rem; flex-shrink: 0; }
+  section.card h3 { color: var(--green-700); margin-top: 1.75rem; }
+
+  code {
+    background: var(--purple-100);
+    color: var(--purple-700);
+    padding: 0.15rem 0.4rem;
+    border-radius: 6px;
+    font-size: 0.9em;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.92rem;
+  }
+  table th {
+    background: linear-gradient(120deg, var(--purple-600), var(--green-600));
+    color: #fff;
+    text-align: left;
+    padding: 0.6rem 0.8rem;
+  }
+  table td {
+    padding: 0.55rem 0.8rem;
+    border-bottom: 1px solid rgba(124,58,237,0.1);
+    vertical-align: top;
+  }
+  table tr:nth-child(even) td { background: rgba(124,58,237,0.04); }
+
+  ul.flower-list { list-style: none; padding-left: 0; margin: 1rem 0; }
+  ul.flower-list li {
+    position: relative;
+    padding-left: 1.7rem;
+    margin-bottom: 0.6rem;
+    line-height: 1.5;
+  }
+  ul.flower-list li::before {
+    content: "🌷";
+    position: absolute;
+    left: 0;
+    top: -0.05rem;
+    font-size: 0.95rem;
+  }
+
+  .pill {
+    display: inline-block;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-right: 0.4rem;
+  }
+  .pill.purple { background: var(--purple-100); color: var(--purple-700); }
+  .pill.green { background: var(--green-100); color: var(--green-700); }
+
+  .bug-card {
+    border: 1px solid var(--green-300);
+    background: var(--green-100);
+    border-radius: 14px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .bug-card h4 {
+    margin: 0 0 0.4rem;
+    color: var(--green-700);
+    font-size: 1rem;
+  }
+  .bug-card .file { font-family: monospace; font-size: 0.82rem; opacity: 0.75; }
+
+  .mermaid-wrap {
+    background: linear-gradient(160deg, var(--purple-100), var(--green-100));
+    border-radius: 14px;
+    padding: 1.25rem;
+    margin: 1.25rem 0;
+    overflow-x: auto;
+  }
+
+  footer.done {
+    text-align: center;
+    padding: 2.5rem 0 1rem;
+    color: var(--purple-700);
+    opacity: 0.8;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 900px) {
+    .page { grid-template-columns: 1fr; }
+    nav.toc { position: static; max-height: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <svg class="flower-corner tl" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <g fill="#ffffff" fill-opacity="0.35">
+      <ellipse cx="50" cy="22" rx="15" ry="24"/>
+      <ellipse cx="50" cy="22" rx="15" ry="24" transform="rotate(72 50 50)"/>
+      <ellipse cx="50" cy="22" rx="15" ry="24" transform="rotate(144 50 50)"/>
+      <ellipse cx="50" cy="22" rx="15" ry="24" transform="rotate(216 50 50)"/>
+      <ellipse cx="50" cy="22" rx="15" ry="24" transform="rotate(288 50 50)"/>
+    </g>
+    <circle cx="50" cy="50" r="10" fill="#fff" fill-opacity="0.55"/>
+  </svg>
+  <svg class="flower-corner br" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <g fill="#ffffff" fill-opacity="0.3">
+      <ellipse cx="50" cy="22" rx="15" ry="24"/>
+      <ellipse cx="50" cy="22" rx="15" ry="24" transform="rotate(72 50 50)"/>
+      <ellipse cx="50" cy="22" rx="15" ry="24" transform="rotate(144 50 50)"/>
+      <ellipse cx="50" cy="22" rx="15" ry="24" transform="rotate(216 50 50)"/>
+      <ellipse cx="50" cy="22" rx="15" ry="24" transform="rotate(288 50 50)"/>
+    </g>
+    <circle cx="50" cy="50" r="10" fill="#fff" fill-opacity="0.45"/>
+  </svg>
+
+  <h1>🌸 Recuperación de Diseño — Sistema de Itinerarios Personales 🌷</h1>
+  <p>Documento de apoyo para ingeniería inversa / software design recovery: arquitectura, modelos de dominio, contratos, flujos y hallazgos reales de ejecución.</p>
+  <p>Preparado para <strong>Ximena</strong> — si necesitas ayuda, me avisas y miramos como le hacemos.</p>
+  <span class="badge">🌷🌸 Cuando termines esto Cristian te va a dar tus flores arcoiris 🌸🌷</span>
+</header>
+
+<div class="page">
+
+  <nav class="toc">
+    <h3>🌼 Contenido</h3>
+    <ol>
+      <li><a href="#resumen">Resumen ejecutivo</a></li>
+      <li><a href="#estilos">Estilos arquitectónicos combinados</a></li>
+      <li><a href="#contextos">Bounded contexts (DDD)</a></li>
+      <li><a href="#hexagonal">Adapter + Arquitectura Hexagonal</a></li>
+      <li><a href="#dominio">Modelo de dominio</a></li>
+      <li><a href="#relacional">Modelo relacional</a></li>
+      <li><a href="#eventos">Flujo de eventos y Outbox</a></li>
+      <li><a href="#adrs">Decisiones clave (ADRs)</a></li>
+      <li><a href="#componentes">Diagrama de componentes</a></li>
+      <li><a href="#seguridad">Seguridad</a></li>
+      <li><a href="#resiliencia">Resiliencia y Chaos Engineering</a></li>
+      <li><a href="#observabilidad">Observabilidad</a></li>
+      <li><a href="#frontend">Frontend (Angular)</a></li>
+      <li><a href="#hallazgos">Hallazgos reales al ejecutar</a></li>
+      <li><a href="#archivos">Mapa de archivos clave</a></li>
+      <li><a href="#correr">Cómo correr el proyecto</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section class="card" id="resumen">
+      <h2>🌱 Resumen ejecutivo</h2>
+      <p>
+        <strong>Sistema de Itinerarios Personales</strong> es una aplicación académica de planificación de viajes,
+        construida deliberadamente para demostrar <strong>tres estilos arquitectónicos combinados</strong>:
+        microservicios, arquitectura basada en eventos, y serverless (FaaS). No es un proyecto "de negocio" real,
+        sino un ejercicio de nivel 1+2+3 de un reto de arquitectura de software.
+      </p>
+      <p>El sistema deja crear/listar/eliminar itinerarios de viaje entre aeropuertos colombianos reales
+        (obtenidos de la API pública <em>API Colombia</em>), y notifica de forma asíncrona cuando se crea uno.</p>
+      <ul class="flower-list">
+        <li><strong>Frontend:</strong> Angular 18 standalone, con mapa interactivo (Plotly) y CRUD de itinerarios.</li>
+        <li><strong>Backend:</strong> 4 servicios Python/FastAPI (Airport, Itinerary, API Gateway, notification-bridge) + 2 funciones Lambda.</li>
+        <li><strong>Infraestructura:</strong> PostgreSQL, Redis, RabbitMQ, LocalStack, Vault, Toxiproxy, Jaeger, Prometheus, Grafana — todo vía <code>docker-compose</code>.</li>
+      </ul>
+    </section>
+
+    <div class="flower-divider">
+      <svg viewBox="0 0 100 100"><g fill="#7c3aed"><ellipse cx="50" cy="30" rx="10" ry="16"/><ellipse cx="50" cy="30" rx="10" ry="16" transform="rotate(72 50 50)"/><ellipse cx="50" cy="30" rx="10" ry="16" transform="rotate(144 50 50)"/><ellipse cx="50" cy="30" rx="10" ry="16" transform="rotate(216 50 50)"/><ellipse cx="50" cy="30" rx="10" ry="16" transform="rotate(288 50 50)"/></g><circle cx="50" cy="50" r="8" fill="#10b981"/></svg>
+    </div>
+
+    <section class="card" id="estilos">
+      <h2>🌺 Estilos arquitectónicos combinados</h2>
+      <table>
+        <thead><tr><th>Estilo</th><th>Dónde se aplica</th><th>Cómo se demuestra</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pill purple">Microservicios</span></td><td>Airport Service, Itinerary Service</td><td>Servicios independientes, cada uno con su propia base de datos/estado, comunicados por HTTP/gRPC</td></tr>
+          <tr><td><span class="pill green">Basada en eventos</span></td><td>Itinerary Service → RabbitMQ → Notification</td><td>Transactional Outbox + evento de integración versionado (<code>docs/asyncapi.yaml</code>)</td></tr>
+          <tr><td><span class="pill purple">Serverless (FaaS)</span></td><td>Notification Service, Reportes</td><td>Funciones Lambda en LocalStack, activadas por evento o bajo demanda</td></tr>
+        </tbody>
+      </table>
+      <p>Infraestructura compartida: API Gateway (FastAPI), RabbitMQ, Redis, Postgres (uno por servicio),
+        LocalStack, Vault, Toxiproxy, OpenTelemetry + Jaeger, Prometheus + Grafana.</p>
+    </section>
+
+    <section class="card" id="contextos">
+      <h2>🌻 Bounded contexts (DDD) y lenguaje ubicuo</h2>
+
+      <h3>Airport Context</h3>
+      <p>Conoce los aeropuertos colombianos y los expone en un formato de dominio propio, desacoplado de la API externa.</p>
+      <table>
+        <thead><tr><th>Término</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><code>Airport</code></td><td>Entidad con id, nombre, código IATA, ciudad, latitud/longitud</td></tr>
+          <tr><td><code>AirportRepositoryPort</code></td><td>Contrato del dominio para obtener aeropuertos, sin saber cómo se implementa</td></tr>
+          <tr><td><code>ApiColombiaAdapter</code></td><td>Traduce la respuesta externa al modelo de dominio</td></tr>
+          <tr><td><code>CachingAirportAdapter</code></td><td>Decorador que aplica cache-aside sobre Redis</td></tr>
+          <tr><td><code>CircuitBreaker</code></td><td>Corta las llamadas a la API externa cuando falla repetidamente</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Itinerary Context</h3>
+      <p>Responsable del ciclo de vida de los itinerarios de viaje del usuario.</p>
+      <table>
+        <thead><tr><th>Término</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><code>Itinerary</code></td><td>Agregado raíz: usuario, aeropuertos origen/destino (referencia de valor), fecha, duración</td></tr>
+          <tr><td><code>CreateItineraryUseCase</code>, etc.</td><td>Orquesta validación + persistencia + evento de dominio</td></tr>
+          <tr><td><code>OutboxEvent</code></td><td>Fila transaccional que garantiza la publicación futura del evento</td></tr>
+          <tr><td><code>ItineraryCreatedEvent v1</code></td><td>Evento de integración versionado (ver AsyncAPI)</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Notification Context</h3>
+      <p>Reacciona a la creación de itinerarios y genera reportes bajo demanda, sin servidor permanente.</p>
+      <table>
+        <thead><tr><th>Término</th><th>Significado</th></tr></thead>
+        <tbody>
+          <tr><td><code>SendNotificationFunction</code></td><td>Lambda activada al recibir <code>ItineraryCreatedEvent</code></td></tr>
+          <tr><td><code>GenerateItineraryReportFunction</code></td><td>Lambda invocada bajo demanda</td></tr>
+          <tr><td><code>notification-bridge</code></td><td>Traduce mensajes de RabbitMQ a invocaciones Lambda</td></tr>
+        </tbody>
+      </table>
+      <p>Los tres contextos se comunican <strong>solo</strong> por contratos explícitos — ningún contexto accede directamente a la base de datos de otro.</p>
+
+      <div class="mermaid-wrap">
+        <div class="mermaid">
+flowchart LR
+    subgraph "Airport Context"
+    AC["Airport (entidad)"]
+    end
+    subgraph "Itinerary Context"
+    IC["Itinerary (agregado raiz)"]
+    end
+    subgraph "Notification Context"
+    NC["SendNotificationFunction / GenerateItineraryReportFunction"]
+    end
+    IC -->|"gRPC GetAirportById"| AC
+    IC -->|"Evento de integracion v1"| NC
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="hexagonal">
+      <h2>🌹 Patrón Adapter + Arquitectura Hexagonal</h2>
+      <p>Cada microservicio (Airport, Itinerary) se organiza en las mismas capas, con la regla de dependencia
+        siempre hacia adentro:</p>
+      <div class="mermaid-wrap">
+        <div class="mermaid">
+flowchart TB
+    API["api/  (routers FastAPI, esquemas Pydantic)"] --> APP["application/  (casos de uso)"]
+    INFRA["infrastructure/  (Postgres, Redis, RabbitMQ, gRPC, HTTP externo)"] --> APP
+    APP --> DOM["domain/  (entidades, value objects, puertos)"]
+        </div>
+      </div>
+      <ul class="flower-list">
+        <li><code>domain/ports.py</code> → interfaz <code>AirportRepositoryPort</code> (el "Puerto")</li>
+        <li><code>infrastructure/api_colombia_adapter.py</code> → <code>ApiColombiaAdapter</code> (el "Adapter")</li>
+        <li><code>infrastructure/caching_adapter.py</code> → <code>CachingAirportAdapter</code> (decora al Adapter)</li>
+      </ul>
+      <p>El dominio nunca depende de detalles externos: el frontend y los demás servicios solo conocen el modelo
+        adaptado (REST <code>/api/v1/airports</code> y gRPC <code>airport.v1.AirportService</code>).</p>
+    </section>
+
+    <section class="card" id="dominio">
+      <h2>🌷 Modelo de dominio (Itinerary Context)</h2>
+      <div class="mermaid-wrap">
+        <div class="mermaid">
+classDiagram
+    class Itinerary {
+        +UUID id
+        +str user_name
+        +AirportSnapshot origin
+        +AirportSnapshot destination
+        +date travel_date
+        +int duration_minutes
+        +created_at
+        +updated_at
+    }
+    class AirportSnapshot {
+        +int id
+        +str iata_code
+        +str name
+    }
+    class OutboxEvent {
+        +UUID id
+        +UUID aggregate_id
+        +str event_type
+        +dict payload
+        +datetime published_at
+    }
+    class ItineraryRepositoryPort {
+        <<interface>>
+        +add_with_outbox(itinerary, event)
+        +get(id)
+        +list(page, page_size)
+        +update(itinerary)
+        +delete(id)
+    }
+    class AirportValidationPort {
+        <<interface>>
+        +get_airport(id) AirportSnapshot
+    }
+    class CreateItineraryUseCase {
+        +execute(command) Itinerary
+    }
+    Itinerary "1" *-- "2" AirportSnapshot
+    CreateItineraryUseCase --> ItineraryRepositoryPort
+    CreateItineraryUseCase --> AirportValidationPort
+    ItineraryRepositoryPort ..> OutboxEvent : escribe junto al agregado
+        </div>
+      </div>
+      <p>En Airport Service, <code>Airport</code> es un <code>@dataclass(frozen=True, slots=True)</code> — inmutable
+        y sin <code>__dict__</code> (esto importa: ver hallazgo real en la sección 14).</p>
+    </section>
+
+    <section class="card" id="relacional">
+      <h2>🌸 Modelo relacional (Itinerary Service — PostgreSQL)</h2>
+      <div class="mermaid-wrap">
+        <div class="mermaid">
+erDiagram
+    ITINERARIES {
+        uuid id PK
+        text user_name
+        int origin_airport_id
+        text origin_airport_code
+        text origin_airport_name
+        int destination_airport_id
+        text destination_airport_code
+        text destination_airport_name
+        date travel_date
+        int duration_minutes
+        timestamptz created_at
+        timestamptz updated_at
+    }
+    OUTBOX_EVENTS {
+        uuid id PK
+        uuid aggregate_id FK
+        text event_type
+        jsonb payload
+        timestamptz created_at
+        timestamptz published_at "nullable"
+    }
+    ITINERARIES ||--o{ OUTBOX_EVENTS : "genera"
+        </div>
+      </div>
+      <p><strong>Nota de diseño (ADR 0001):</strong> Itinerary Service <em>no</em> tiene tabla <code>airports</code>;
+        el aeropuerto se trata como <strong>referencia de valor</strong>, validada vía gRPC en el momento de creación,
+        y solo se guarda un snapshot inmutable (id, IATA, nombre) para lectura posterior.</p>
+    </section>
+
+    <section class="card" id="eventos">
+      <h2>🌼 Flujo de eventos: Transactional Outbox</h2>
+      <p><strong>Problema (ADR 0002):</strong> escribir en Postgres y publicar en RabbitMQ como dos pasos separados
+        crea una ventana de inconsistencia (Double Write Problem). La solución: insertar el evento en la misma
+        transacción que el agregado, y un proceso en background (<code>OutboxRelay</code>) lo publica después.</p>
+
+      <div class="mermaid-wrap">
+        <div class="mermaid">
+sequenceDiagram
+    actor Usuario
+    participant FE as Frontend Angular
+    participant GW as API Gateway
+    participant IS as Itinerary Service
+    participant AS as Airport Service
+    participant MQ as RabbitMQ
+    participant NB as notification-bridge
+    participant LS as SendNotificationFunction
+
+    Usuario->>FE: Completa formulario
+    FE->>GW: POST /api/v1/itineraries (Bearer JWT)
+    GW->>IS: proxy + propaga Authorization
+    IS->>AS: gRPC GetAirportById x2 (token OAuth2 S2S)
+    AS-->>IS: AirportReply (found=true)
+    IS->>IS: INSERT itinerary + INSERT outbox_event (misma transaccion)
+    IS-->>GW: 201 Created
+    GW-->>FE: 201 Created
+    loop cada OUTBOX_RELAY_INTERVAL_SECONDS
+        IS->>IS: OutboxRelay busca eventos pendientes
+    end
+    IS->>MQ: publish ItineraryCreatedEvent v1
+    MQ->>NB: entrega el mensaje
+    NB->>LS: lambda Invoke SendNotificationFunction
+    LS-->>NB: status sent / duplicate
+    NB->>MQ: ack
+        </div>
+      </div>
+
+      <p><strong>Semántica at-least-once deliberada:</strong> el consumidor (<code>SendNotificationFunction</code>)
+        es idempotente — guarda el <code>event_id</code> procesado y descarta duplicados.</p>
+    </section>
+
+    <section class="card" id="adrs">
+      <h2>🌻 Decisiones arquitectónicas clave (ADRs)</h2>
+
+      <div class="bug-card">
+        <h4>ADR 0001 — Aeropuerto como referencia de valor</h4>
+        <p>Itinerary Context no replica la entidad Aeropuerto completa; valida por gRPC contra Airport Service y
+          guarda solo un snapshot mínimo e inmutable. Consecuencia: un itinerario ya creado sigue siendo legible
+          aunque Airport Service esté caído, pero <em>crear</em> uno nuevo sí lo requiere.</p>
+        <span class="file">docs/adr/0001-agregado-aeropuerto.md</span>
+      </div>
+
+      <div class="bug-card">
+        <h4>ADR 0002 — Transactional Outbox</h4>
+        <p>Resuelve el Double Write Problem entre Postgres y RabbitMQ. At-least-once + deduplicación en el
+          consumidor, en vez de 2PC entre BD y broker.</p>
+        <span class="file">docs/adr/0002-double-write-problem.md</span>
+      </div>
+
+      <div class="bug-card">
+        <h4>ADR 0003 — Eventos de dominio vs. de integración</h4>
+        <p><code>ItineraryCreated</code> (dominio, interno, sin contrato) vs. <code>ItineraryCreatedEvent v1</code>
+          (integración, cruza la frontera del servicio, contrato versionado en <code>docs/asyncapi.yaml</code>).</p>
+        <span class="file">docs/adr/0003-eventos-dominio-vs-integracion.md</span>
+      </div>
+    </section>
+
+    <section class="card" id="componentes">
+      <h2>🌺 Diagrama de componentes (despliegue)</h2>
+      <div class="mermaid-wrap">
+        <div class="mermaid">
+flowchart LR
+    FE["Frontend Angular :8080"] -->|HTTP| GW["API Gateway :8000"]
+    GW -->|REST| AS["Airport Service :8001"]
+    GW -->|REST| IS["Itinerary Service :8002"]
+    AS -->|"gRPC + JWT S2S"| IS
+    AS --> REDIS[("Redis")]
+    AS -->|Adapter| EXT[["API Colombia externa"]]
+    IS --> PG[("PostgreSQL")]
+    IS -->|Outbox Relay| MQ[["RabbitMQ"]]
+    MQ --> NB["notification-bridge :8090"]
+    NB -->|"lambda:Invoke"| LS["LocalStack"]
+    LS --> SNF["SendNotificationFunction"]
+    LS --> GRF["GenerateItineraryReportFunction"]
+    GRF -->|HTTP bajo demanda| IS
+        </div>
+      </div>
+      <p>Para Kubernetes ver <code>infra/k8s/README.md</code> (mismo sistema, sin las piezas de infraestructura
+        compartida que normalmente se instalan como charts de Helm independientes).</p>
+    </section>
+
+    <section class="card" id="seguridad">
+      <h2>🌷 Seguridad</h2>
+      <ul class="flower-list">
+        <li><strong>Usuario → sistema:</strong> API Gateway emite JWT (HS256) en <code>POST /auth/login</code>
+          (usuario demo: <code>viajero</code> / <code>viajero123</code>, definidos en <code>.env</code> como
+          <code>DEMO_USER</code>/<code>DEMO_PASSWORD</code>) y lo propaga a los servicios internos.</li>
+        <li><strong>Servicio → servicio:</strong> Itinerary Service obtiene un token OAuth2 Client Credentials de
+          Airport Service (<code>POST /oauth/token</code>) y lo envía como metadata gRPC; un interceptor gRPC
+          rechaza cualquier llamada sin token válido.</li>
+        <li><strong>Endpoints públicos:</strong> <code>GET /api/v1/airports*</code> son públicos a propósito (el
+          mapa funciona sin sesión); invalidar caché sí exige JWT.</li>
+        <li><strong>Secretos:</strong> cada servicio intenta leer de Vault al arrancar y cae a variables de entorno
+          si Vault no está disponible.</li>
+      </ul>
+    </section>
+
+    <section class="card" id="resiliencia">
+      <h2>🌼 Resiliencia y Chaos Engineering</h2>
+      <ul class="flower-list">
+        <li><strong>Circuit Breaker</strong> propio (async, 3 estados) + <strong>Retry</strong> con backoff
+          exponencial y jitter (<code>tenacity</code>) + <strong>Bulkhead</strong> (semáforo dedicado) alrededor de
+          las llamadas de Airport Service a la API externa.</li>
+        <li><strong>Cache Redis</strong> (cache-aside, con invalidación explícita).</li>
+        <li><strong>Chaos Engineering:</strong> <code>TOXIPROXY_ENABLED=true</code> enruta Airport Service a través
+          de Toxiproxy hacia un stub local que imita API Colombia; <code>scripts/chaos_demo.sh</code> inyecta
+          latencia y muestra la apertura del circuit breaker.</li>
+      </ul>
+      <p>Archivo clave: <code>services/airport-service/app/infrastructure/resilience.py</code></p>
+    </section>
+
+    <section class="card" id="observabilidad">
+      <h2>🌻 Observabilidad</h2>
+      <ul class="flower-list">
+        <li><strong>Trazas distribuidas:</strong> OpenTelemetry (FastAPI + httpx + gRPC) exportando a Jaeger.</li>
+        <li><strong>Logs estructurados:</strong> JSON con <code>trace_id</code>/<code>span_id</code>/<code>correlation_id</code>
+          (<code>libs/common/common/logging.py</code> + <code>correlation.py</code>).</li>
+        <li><strong>Métricas:</strong> Prometheus scrapea los 4 servicios Python + RabbitMQ; alertas en
+          <code>infra/prometheus/alert_rules.yml</code> (circuit breaker abierto, dead-letters, bulkhead saturado);
+          dashboard en Grafana.</li>
+      </ul>
+    </section>
+
+    <section class="card" id="frontend">
+      <h2>🌹 Frontend: Angular 18 (standalone)</h2>
+      <p>Migrado de HTML/JS plano a Angular, con vistas separadas por ruta, i18n (ES/EN/FR), modo oscuro y
+        animaciones.</p>
+      <div class="mermaid-wrap">
+        <div class="mermaid">
+flowchart TB
+    APP["AppComponent (shell: header, tema, idioma, sesion)"] --> ROUTER["Router"]
+    ROUTER --> MAP["MapPageComponent"]
+    ROUTER --> ITIN["ItinerariesPageComponent"]
+    ITIN --> CREATE["CreateItineraryFormComponent"]
+    APP --> SESSION["SessionBarComponent"]
+    MAP --> API["ApiService"]
+    ITIN --> API
+    SESSION --> AUTH["AuthService (signals)"]
+    API --> INTERCEPTOR["authInterceptor"]
+    APP --> THEME["ThemeService"]
+    APP --> I18N["TranslateService (es/en/fr)"]
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>Pieza</th><th>Responsabilidad</th></tr></thead>
+        <tbody>
+          <tr><td><code>core/services/api.service.ts</code></td><td>Llamadas HTTP al API Gateway (login, aeropuertos, itinerarios)</td></tr>
+          <tr><td><code>core/services/auth.service.ts</code></td><td>Sesión en memoria (signals), nunca en localStorage</td></tr>
+          <tr><td><code>core/services/theme.service.ts</code></td><td>Modo oscuro/claro vía atributo <code>data-theme</code></td></tr>
+          <tr><td><code>core/interceptors/auth.interceptor.ts</code></td><td>Adjunta el JWT a cada petición</td></tr>
+          <tr><td><code>features/map/</code></td><td>Mapa Plotly + panel lateral de info del aeropuerto señalado</td></tr>
+          <tr><td><code>features/itineraries/</code></td><td>Crear/listar/paginar/eliminar itinerarios</td></tr>
+        </tbody>
+      </table>
+      <p>Build multi-stage en <code>frontend/Dockerfile</code> (Node compila, nginx solo sirve estáticos);
+        <code>frontend/nginx.conf</code> hace <em>fallback</em> de rutas cliente a <code>index.html</code>.</p>
+    </section>
+
+    <section class="card" id="hallazgos">
+      <h2>🌷 Hallazgos reales al ejecutar el sistema por primera vez</h2>
+      <p>El README original advertía que el flujo Docker <strong>nunca se había corrido de punta a punta</strong>.
+        Al levantarlo con <code>docker compose up</code>, aparecieron estos bugs reales — muy útiles para entender
+        el comportamiento real del sistema más allá de lo documentado:</p>
+
+      <div class="bug-card">
+        <h4>1. Conflicto de dependencias pip (airport-service)</h4>
+        <p><code>grpcio-tools==1.66.1</code> exige <code>protobuf&gt;=5.26.1</code>, pero
+          <code>opentelemetry-exporter-otlp-proto-grpc==1.27.0</code> exige <code>protobuf&lt;5.0</code>. Se
+          relajaron los pines de OpenTelemetry a <code>&gt;=</code>.</p>
+        <span class="file">services/airport-service/requirements.txt</span>
+      </div>
+
+      <div class="bug-card">
+        <h4>2. Scripts con CRLF (checkout en Windows)</h4>
+        <p>4 scripts <code>.sh</code> tenían saltos de línea CRLF, rompiendo <code>exec</code> en contenedores
+          Linux (<code>no such file or directory</code>). Se corrigieron y se añadió <code>.gitattributes</code>.</p>
+        <span class="file">services/itinerary-service/docker-entrypoint.sh, infra/localstack/init/01_create_functions.sh, scripts/*.sh</span>
+      </div>
+
+      <div class="bug-card">
+        <h4>3. Import de FastAPI a nivel de módulo rompía notification-bridge</h4>
+        <p><code>common/telemetry.py</code> importaba <code>FastAPIInstrumentor</code> arriba del archivo, pero
+          <code>notification-bridge</code> no usa FastAPI (ni lo tiene instalado). Se movió el import dentro de
+          <code>setup_telemetry()</code>.</p>
+        <span class="file">libs/common/common/telemetry.py</span>
+      </div>
+
+      <div class="bug-card">
+        <h4>4. FastAPI 204 + <code>response_model</code> implícito</h4>
+        <p>Un endpoint <code>DELETE</code> con retorno <code>-&gt; None</code> se infiere como
+          <code>response_model=NoneType</code>, lo cual choca con status 204 ("no debe tener cuerpo"). Se agregó
+          <code>response_model=None</code> explícito.</p>
+        <span class="file">services/itinerary-service/app/api/routers/itineraries.py</span>
+      </div>
+
+      <div class="bug-card">
+        <h4>5. <code>vars()</code> sobre un dataclass con <code>slots=True</code></h4>
+        <p><code>Airport</code> es <code>@dataclass(frozen=True, slots=True)</code> (sin <code>__dict__</code>);
+          <code>vars(airport)</code> lanzaba <code>TypeError</code>. Se cambió a <code>dataclasses.asdict()</code>.</p>
+        <span class="file">services/airport-service/app/api/routes.py</span>
+      </div>
+
+      <div class="bug-card">
+        <h4>6. LocalStack 3.8: el ejecutor Lambda "local" está obsoleto</h4>
+        <p>Requiere montar <code>/var/run/docker.sock</code> para el ejecutor Lambda real (Docker-outside-of-Docker);
+          además, ese ejecutor solo permite escribir en <code>/tmp</code> (como en AWS real), así que
+          <code>NOTIFICATION_DB_PATH</code> se movió ahí.</p>
+        <span class="file">docker-compose.yml, infra/localstack/init/01_create_functions.sh, functions/send_notification_function/handler.py</span>
+      </div>
+
+      <div class="bug-card">
+        <h4>7. Bug real en el Outbox Relay: bucle infinito de republicación</h4>
+        <p><code>pika</code>'s <code>channel.basic_publish()</code> no devuelve un booleano (devuelve
+          <code>None</code> incluso en éxito); el código hacía <code>return channel.basic_publish(...)</code>, así
+          que <code>published_at</code> nunca se marcaba y el evento se reenviaba cada ciclo, para siempre.</p>
+        <span class="file">services/itinerary-service/app/infrastructure/messaging/rabbitmq_publisher.py</span>
+      </div>
+
+      <p><strong>Conclusión para Ximena:</strong> el diseño documentado (ADRs, README) es correcto y coherente,
+        pero el código tenía varios bugs de "primera ejecución" nunca detectados porque nadie lo había corrido
+        contra Docker real. Vale la pena revisar el <code>git log</code> reciente para ver el diff exacto de cada
+        fix.</p>
+    </section>
+
+    <section class="card" id="archivos">
+      <h2>🌸 Mapa de archivos clave</h2>
+      <table>
+        <thead><tr><th>Ruta</th><th>Qué es</th></tr></thead>
+        <tbody>
+          <tr><td><code>services/airport-service/app/</code></td><td>Microservicio Airport (dominio+adapter+gRPC+REST)</td></tr>
+          <tr><td><code>services/itinerary-service/app/</code></td><td>Microservicio Itinerary (outbox, alembic, gRPC client)</td></tr>
+          <tr><td><code>services/api-gateway/app/</code></td><td>Gateway FastAPI (routing, JWT, rate limit)</td></tr>
+          <tr><td><code>services/notification-bridge/app/</code></td><td>Puente RabbitMQ → invocación Lambda</td></tr>
+          <tr><td><code>functions/</code></td><td>Código de las 2 Lambdas (LocalStack)</td></tr>
+          <tr><td><code>libs/common/common/</code></td><td>Logging, correlation id, telemetry, seguridad, Vault — compartido por los 4 servicios Python</td></tr>
+          <tr><td><code>proto/airport.proto</code></td><td>Contrato gRPC entre Itinerary y Airport</td></tr>
+          <tr><td><code>docs/asyncapi.yaml</code></td><td>Contrato del evento de integración <code>ItineraryCreatedEvent v1</code></td></tr>
+          <tr><td><code>docs/adr/</code></td><td>Las 3 decisiones arquitectónicas documentadas</td></tr>
+          <tr><td><code>infra/</code></td><td>Kubernetes, Vault, Toxiproxy, Prometheus, Grafana, LocalStack init</td></tr>
+          <tr><td><code>frontend/src/app/</code></td><td>Aplicación Angular (features, core, shared)</td></tr>
+          <tr><td><code>tests/contract/</code>, <code>tests/e2e/</code></td><td>Pact (contract testing) y Testcontainers (E2E)</td></tr>
+          <tr><td><code>docker-compose.yml</code></td><td>Orquestación completa de los 14 contenedores</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="card" id="correr">
+      <h2>🌺 Cómo correr el proyecto</h2>
+      <pre style="background:var(--purple-100); padding:1rem; border-radius:10px; overflow-x:auto;"><code>cp .env.example .env
+docker compose up --build
+
+Frontend:        http://localhost:8080
+API Gateway:     http://localhost:8000/docs
+Airport Service: http://localhost:8001/docs
+Itinerary Svc:   http://localhost:8002/docs
+RabbitMQ mgmt:   http://localhost:15672 (guest/guest)
+Jaeger UI:       http://localhost:16686
+Prometheus:      http://localhost:9090
+Grafana:         http://localhost:3000 (admin/admin)
+
+Usuario demo:    viajero / viajero123</code></pre>
+    </section>
+
+  </main>
+</div>
+
+<footer class="done">
+  🌸 🌷 🌼 &nbsp; Si lees esto me debes una arepa con miel, no hagas trampa. &nbsp; 🌻 🌺 🌸
+</footer>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "base",
+    themeVariables: {
+      primaryColor: "#f3eefe",
+      primaryTextColor: "#3b0764",
+      primaryBorderColor: "#7c3aed",
+      lineColor: "#059669",
+      secondaryColor: "#e6fbf1",
+      tertiaryColor: "#ffffff",
+      fontFamily: "Inter, sans-serif"
+    }
+  });
+</script>
+
+</body>
+</html>
